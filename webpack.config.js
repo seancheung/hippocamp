@@ -9,13 +9,11 @@ module.exports = {
     filename: 'build.js'
   },
   module: {
-    rules: [
-      {
+    rules: [{
         test: /\.vue$/,
         loader: 'vue-loader',
         options: {
-          loaders: {
-          }
+          loaders: {}
           // other vue-loader options go here
         }
       },
@@ -34,6 +32,10 @@ module.exports = {
       {
         test: /\.css$/,
         loader: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+        loader: 'url-loader?limit=100000'
       }
     ]
   },
@@ -58,7 +60,8 @@ module.exports = {
   devtool: '#eval-source-map',
   plugins: [
     new webpack.ProvidePlugin({
-      $: 'jquery'
+      $: 'jquery',
+      jQuery: 'jquery'
     })
   ]
 }

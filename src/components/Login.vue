@@ -1,56 +1,72 @@
 <template>
-  <div class="container">
-    <h1>Login</h1>
-    <form>
-      <b-form-fieldset label="用户名">
-        <b-form-input v-model="name" type="text" placeholder="用户名" :variant="name?'success':'warning'"></b-form-input>
-      </b-form-fieldset>
-      <b-form-fieldset label="密码">
-        <b-form-input v-model="password" type="password" placeholder="密码" :variant="password?'success':'warning'"></b-form-input>
-      </b-form-fieldset>
-    </form>
-    <b-button @click="login">
-      Sign In
-    </b-button>
-    <b-alert variant="danger" dismissible :show="show" @dismissed="show=false">
-      {{message}}
-    </b-alert>
-  </div>
+    <div class="ui center aligned grid container">
+        <div class="center aligned sixteen wide mobile eight wide tablet six wide computer column">
+            <form class="ui form" @submit.prevent="login" :class="{loading, success, error}">
+                <div class="field">
+                    <label>用户名/邮箱</label>
+                    <input type="text" name="account" v-model="account" placeholder="用户名/邮箱">
+                </div>
+                <div class="field">
+                    <label>密码</label>
+                    <input type="password" name="password" v-model="password" placeholder="密码">
+                </div>
+                <div class="ui success message">
+                    <div class="header">登录成功</div>
+                    <p>{{ message }}</p>
+                </div>
+                <div class="ui error message">
+                    <div class="header">登陆失败</div>
+                    <p>{{ message }}</p>
+                </div>
+                <button class="ui button" type="submit">登陆</button>
+            </form>
+        </div>
+    </div>
 </template>
 
 <script>
-export default {
-  name: 'login',
-  data() {
-    return {
-      name: '',
-      password: '',
-      message: '',
-      show: false
-    }
-  },
-  methods: {
-    login() {
-      this.$http.post('/api/v1/auth', {
-        account: this.name,
-        password: this.password
-      }).then(res => {
-        console.log(res.body);
-        if (res.body.success) {
-          this.message = 'Success';
-          this.$router.push('/');
-        }
-        else {
-          this.message = res.body.message;
-        }
-        this.show = true;
-      });
-    }
-  },
-  mounted() {
+"use strict";
 
-  },
-  computed: {
-  }
+export default {
+    name: 'Login',
+    data() {
+        return {
+            account: '',
+            password: '',
+            success: false,
+            loading: false,
+            error: false,
+            message: ''
+        }
+    },
+    methods: {
+        login() {
+            this.loading = true;
+            this.$http.post('/api/v1/auth/login', {
+                account: this.account,
+                password: this.password
+            }).then(res => {
+                this.loading = false;
+                if (res.body.success) {
+                    this.success = true;
+                    this.error = false;
+                    this.$store.commit('auth', res.body.token);
+                    this.$router.push('/');
+                }
+                else {
+                    this.success = false;
+                    this.error = true;
+                    this.message = res.body.message;
+                }
+                this.show = true;
+            });
+        }
+    }
 }
 </script>
+
+<style scoped>
+div.grid.container {
+    margin-top: 60px;
+}
+</style>

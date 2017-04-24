@@ -3,14 +3,15 @@
  */
 
 import Vue from 'vue';
-import Bootstrap from 'bootstrap-vue';
 import Resource from 'vue-resource';
 import Router from 'vue-router';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue/dist/bootstrap-vue.css';
+import Vuex from 'vuex';
+import VueCookie from 'vue-cookie';
+import 'semantic-ui-css/semantic.css';
 
-Vue.use(Bootstrap);
 Vue.use(Resource);
 Vue.use(Router);
+Vue.use(Vuex);
+Vue.use(VueCookie);
 
 export default Vue;
