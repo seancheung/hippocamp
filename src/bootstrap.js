@@ -8,6 +8,7 @@ import Router from 'vue-router';
 import Vuex from 'vuex';
 import VueCookie from 'vue-cookie';
 import 'semantic-ui-css/semantic.css';
+import 'semantic-ui-css/semantic.js';
 
 Vue.use(Resource);
 Vue.use(Router);

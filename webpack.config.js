@@ -48,7 +48,7 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
     noInfo: true,
-    host: '0.0.0.0',
+    host: 'localhost',
     port: '9000',
     proxy: {
       '/api/v1': 'http://localhost:3000'

@@ -1,39 +1,29 @@
 import Vue from './bootstrap';
 import Vuex from 'vuex';
 
-const setHeaders = token => {
-    Vue.http.interceptors.push((req, next) => {
-        req.headers['Authorization'] = token;
-        req.headers['Accept'] = 'application/json';
-        next();
-    });
-}
-
-const jwt = Vue.cookie.get('jwt');
-
-if (jwt) {
-    setHeaders(jwt);
-}
-
 export default new Vuex.Store({
     state: {
-        jwt: jwt
+        jwt: Vue.cookie.get('jwt'),
+        profile: null
     },
     mutations: {
-        auth(state, token) {
+        grant(state, token) {
             state.jwt = token;
-            setHeaders(token);
-            Vue.cookie.set('jwt', token, {
-                expires: '7D'
+            Vue.http.interceptors.push((req, next) => {
+                req.headers.set('Authorization', token);
+                next();
             });
         },
-        unAuth(state) {
+        withdraw(state) {
             state.jwt = null;
-            Vue.cookie.delete('jwt');
+            Vue.http.interceptors.pop();
+        },
+        profile(state) {
+            state.profile = state;
         }
     },
     getters: {
-        authed: state => {
+        authorized: state => {
             return state.jwt;
         }
     }

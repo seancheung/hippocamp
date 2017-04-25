@@ -1,15 +1,24 @@
 <template>
-    <div class="ui center aligned grid container">
-        <div class="center aligned sixteen wide mobile eight wide tablet six wide computer column">
-            <form class="ui form" @submit.prevent="login" :class="{loading, success, error}">
-                <div class="field">
-                    <label>用户名/邮箱</label>
-                    <input type="text" name="account" v-model="account" placeholder="用户名/邮箱">
+    <div class="ui main middle aligned center aligned grid">
+        <div class="column">
+            <h2 class="ui blue icon header"><i class="user icon"></i><div class="content">用户登陆</div></h2>
+            <form class="ui large form" @submit.prevent="login" :class="{loading, success, error}">
+                <div class="ui raised segment">
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="user icon"></i>
+                            <input type="text" name="account" v-model="account" placeholder="用户名/邮箱">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="lock icon"></i>
+                            <input type="password" name="password" v-model="password" placeholder="密码">
+                        </div>
+                    </div>
+                    <button class="ui fluid large blue submit button" type="submit">登陆</button>
                 </div>
-                <div class="field">
-                    <label>密码</label>
-                    <input type="password" name="password" v-model="password" placeholder="密码">
-                </div>
+    
                 <div class="ui success message">
                     <div class="header">登录成功</div>
                     <p>{{ message }}</p>
@@ -18,8 +27,11 @@
                     <div class="header">登陆失败</div>
                     <p>{{ message }}</p>
                 </div>
-                <button class="ui button" type="submit">登陆</button>
+    
             </form>
+            <div class="ui message">
+                新用户? <a href="#">立即注册</a>
+            </div>
         </div>
     </div>
 </template>
@@ -50,7 +62,10 @@ export default {
                 if (res.body.success) {
                     this.success = true;
                     this.error = false;
-                    this.$store.commit('auth', res.body.token);
+                    this.$store.commit('grant', res.body.token);
+                    this.$cookie.set('jwt', res.body.token, {
+                        expires: '7D'
+                    });
                     this.$router.push('/');
                 }
                 else {
@@ -66,7 +81,11 @@ export default {
 </script>
 
 <style scoped>
-div.grid.container {
-    margin-top: 60px;
+.ui.main.grid {
+    height: 100%;
+}
+
+.column {
+    max-width: 450px;
 }
 </style>
