@@ -1,13 +1,19 @@
 <template>
     <div class="ui main middle aligned center aligned grid">
         <div class="column">
-            <h2 class="ui blue icon header"><i class="user icon"></i><div class="content">用户登陆</div></h2>
-            <form class="ui large form" @submit.prevent="login" :class="{loading, success, error}">
+            <h2 class="ui blue icon header"><i class="add user icon"></i><div class="content">用户注册</div></h2>
+            <form class="ui large form" @submit.prevent="register" :class="{loading, success, error}">
                 <div class="ui raised segment">
                     <div class="field">
                         <div class="ui left icon input">
                             <i class="user icon"></i>
-                            <input type="text" name="account" v-model="account" placeholder="用户名/邮箱">
+                            <input type="text" name="name" v-model="name" placeholder="用户名">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="mail icon"></i>
+                            <input type="text" name="email" v-model="email" placeholder="邮箱">
                         </div>
                     </div>
                     <div class="field">
@@ -16,22 +22,29 @@
                             <input type="password" name="password" v-model="password" placeholder="密码">
                         </div>
                     </div>
-                    <button class="ui fluid large blue submit button" type="submit">登陆</button>
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="lock icon"></i>
+                            <input type="password" name="confirm" v-model="confirm" placeholder="确认密码">
+                        </div>
+                    </div>
+                    <button class="ui fluid large blue submit button" type="submit">注册</button>
                 </div>
     
                 <div class="ui success message">
-                    <div class="header">登录成功</div>
+                    <div class="header">注册成功</div>
                     <p>{{ message }}</p>
                 </div>
                 <div class="ui error message">
-                    <div class="header">登陆失败</div>
+                    <div class="header">注册失败</div>
                     <p>{{ message }}</p>
                 </div>
     
             </form>
             <div class="ui basic segment" :class="{disabled:loading}">
                 <div class="ui message">
-                    新用户? <router-link :to="{name: 'Register'}">立即注册</router-link>
+                    已有账号?
+                    <router-link :to="{name: 'Login'}">现在登录</router-link>
                 </div>
             </div>
         </div>
@@ -42,11 +55,13 @@
 "use strict";
 
 export default {
-    name: 'Login',
+    name: 'Register',
     data() {
         return {
-            account: '',
+            name: '',
+            email: '',
             password: '',
+            confirm: '',
             success: false,
             loading: false,
             error: false,
@@ -54,21 +69,18 @@ export default {
         }
     },
     methods: {
-        login() {
+        register() {
             this.loading = true;
-            this.$http.post('/api/v1/auth/login', {
-                account: this.account,
+            this.$http.post('/api/v1/auth/register', {
+                name: this.name,
+                email: this.email,
                 password: this.password
             }).then(res => {
                 this.loading = false;
                 if (res.body.success) {
                     this.success = true;
                     this.error = false;
-                    this.$store.commit('grant', res.body.token);
-                    this.$cookie.set('jwt', res.body.token, {
-                        expires: '7D'
-                    });
-                    this.$router.push('/');
+                    this.$router.push('/login');
                 }
                 else {
                     this.success = false;
@@ -87,12 +99,21 @@ export default {
     mounted() {
         $('.ui.form').form({
             fields: {
-                account: {
-                    identifier: 'account',
+                name: {
+                    identifier: 'name',
                     rules: [
                         {
                             type: 'empty',
-                            prompt: '请输入用户名或邮箱'
+                            prompt: '请输入用户名'
+                        }
+                    ]
+                },
+                email: {
+                    identifier: 'email',
+                    rules: [
+                        {
+                            type: 'email',
+                            prompt: '请输入合法邮箱'
                         }
                     ]
                 },
@@ -104,7 +125,17 @@ export default {
                             prompt: '请输入密码'
                         }
                     ]
+                },
+                confirm: {
+                    identifier: 'confirm',
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: '请确认密码'
+                        }
+                    ]
                 }
+
             }
         });
     }

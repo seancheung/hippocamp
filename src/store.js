@@ -9,10 +9,7 @@ export default new Vuex.Store({
     mutations: {
         grant(state, token) {
             state.jwt = token;
-            Vue.http.interceptors.push((req, next) => {
-                req.headers.set('Authorization', token);
-                next();
-            });
+            Vue.http.headers.common['Authorization'] = token;
         },
         withdraw(state) {
             state.jwt = null;

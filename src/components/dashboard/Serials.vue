@@ -1,5 +1,12 @@
 <template>
-    <div id="qrcode">
+    <div class="ui stackable grid container">
+        <div class="twelve wide column">
+            <div class="ui card">
+            </div>
+        </div>
+        <div class="four wide column">
+            <div class="ui card"></div>
+        </div>
     </div>
 </template>
 
@@ -45,5 +52,8 @@ export default {
 </script>
 
 <style scoped>
-
+.grid.container .ui.card {
+    height: 200px;
+    width: 100%;
+}
 </style>

@@ -1,8 +1,8 @@
 <template>
-    <div class="profile">
+    <div class="profile" v-if="!active">
         <h3 class="ui top attached header">{{profile.name}}, 你好!</h3>
         <div class="ui attached piled segment">
-            <div v-if="!active" class="ui grid container">
+            <div class="ui grid container">
                 <div class="row">
                     <div class="six wide column">
                         <div class="ui tiny header">用户名</div>
@@ -70,7 +70,7 @@ export default {
                     this.active = false;
                 })
                 .catch(err => {
-                    this.active = false;
+                    this.active = true;
                     this.$router.push('/login');
                 });
         }

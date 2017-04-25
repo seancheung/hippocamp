@@ -1,5 +1,6 @@
 import Router from 'vue-router';
 import Login from '../components/Login';
+import Register from '../components/Register';
 import Dashboard from '../components/Dashboard';
 import Home from '../components/dashboard/Home';
 import Orgnizations from '../components/dashboard/Orgnizations';
@@ -14,6 +15,18 @@ export default new Router({
             path: '/login',
             name: 'Login',
             component: Login,
+            beforeEnter: function (to, from, next) {
+                if (!store.getters.authorized) {
+                    next();
+                } else {
+                    next('/');
+                }
+            }
+        },
+        {
+            path: '/register',
+            name: 'Register',
+            component: Register,
             beforeEnter: function (to, from, next) {
                 if (!store.getters.authorized) {
                     next();
