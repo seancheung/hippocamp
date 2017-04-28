@@ -6,16 +6,6 @@
     </div>
 </template>
 
-<script>
-export default {
-    name: 'app',
-    created() {
-        const jwt = this.$cookie.get('jwt');
-        this.$store.commit('grant', jwt);
-    }
-}
-</script>
-
 <style>
 #app {
     font-family: Helvetica Neue,

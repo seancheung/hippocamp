@@ -3,20 +3,18 @@ import Vuex from 'vuex';
 
 export default new Vuex.Store({
     state: {
-        jwt: Vue.cookie.get('jwt'),
+        jwt: null,
         profile: null
     },
     mutations: {
-        grant(state, token) {
-            state.jwt = token;
-            Vue.http.headers.common['Authorization'] = token;
+        grant(state, context) {
+            state.jwt = context.jwt;
+            state.profile = context.profile;
+            Vue.http.headers.common['Authorization'] = state.jwt;
         },
         withdraw(state) {
             state.jwt = null;
-            Vue.http.interceptors.pop();
-        },
-        profile(state) {
-            state.profile = state;
+            Vue.http.headers.common['Authorization'] = '';
         }
     },
     getters: {

@@ -52,7 +52,7 @@ export default {
         logout() {
             this.$store.commit('withdraw');
             this.$cookie.delete('jwt');
-            this.$router.push('/login');
+            this.$router.push({ name: 'Login' });
         }
     }
 }

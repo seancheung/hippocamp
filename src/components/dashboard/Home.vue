@@ -61,22 +61,8 @@ export default {
             return moment(date).format('LL');
         }
     },
-    methods: {
-        getProfile() {
-            this.active = true;
-            this.$http.get('/api/v1/users/profile')
-                .then(res => {
-                    this.profile = res.body;
-                    this.active = false;
-                })
-                .catch(err => {
-                    this.active = true;
-                    this.$router.push('/login');
-                });
-        }
-    },
     mounted() {
-        this.getProfile();
+        this.profile = this.$store.state.profile;
     }
 }
 </script>
