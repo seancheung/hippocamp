@@ -4,6 +4,7 @@ import Register from '../components/Register';
 import Dashboard from '../components/Dashboard';
 import Home from '../components/dashboard/Home';
 import Orgnizations from '../components/dashboard/Orgnizations';
+import OrgnizationDetails from '../components/dashboard/orgnization/Details';
 import Serials from '../components/dashboard/Serials';
 import Settings from '../components/dashboard/Settings';
 import Storages from '../components/dashboard/Storages';
@@ -51,7 +52,12 @@ export default new Router({
                 {
                     path: '/orgnizations',
                     name: 'Orgnizations',
-                    component: Orgnizations
+                    component: Orgnizations,
+                    children: [{
+                        path: '/:id',
+                        props: true,
+                        component: OrgnizationDetails
+                    }]
                 },
                 {
                     path: '/users',

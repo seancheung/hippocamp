@@ -1,5 +1,5 @@
 <template>
-    <div class="profile" v-if="!active">
+    <div class="profile">
         <h3 class="ui top attached header">{{profile.name}}, 你好!</h3>
         <div class="ui attached piled segment">
             <div class="ui grid container">
@@ -41,9 +41,6 @@
                 </div>
             </div>
         </div>
-        <div class="ui inverted dimmer" :class="{active}">
-            <div class="ui text loader">加载中</div>
-        </div>
     </div>
 </template>
 
@@ -52,8 +49,7 @@ import moment from 'moment';
 export default {
     data() {
         return {
-            profile: {},
-            active: true
+            profile: {}
         }
     },
     filters: {

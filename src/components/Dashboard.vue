@@ -27,6 +27,12 @@
         <transition name="fade">
             <router-view></router-view>
         </transition>
+        <div class="ui inline cookie nag">
+            <span class="title">
+            我们使用Cookie以确保您获得最好的体验
+          </span>
+            <i class="close icon"></i>
+        </div>
     </div>
 </template>
 
@@ -35,18 +41,13 @@
 
 export default {
     name: 'Dashboard',
-    data() {
-        return {
-
-        }
-    },
     mounted() {
-        // $('.pointing.menu > a.item').removeClass('active');
-        // $('.pointing.menu > a.item.router-link-active').addClass('active');
-        // $('.pointing.menu > a.item').on('click', function () {
-        //     $('.pointing.menu > a.item').removeClass('active');
-        //     $(this).addClass('active');
-        // });
+        $.cookie = this.$cookie.get;
+        $('.cookie.nag')
+            .nag({
+                key: 'accepts-cookies',
+                value: true
+            });
     },
     methods: {
         logout() {
@@ -60,6 +61,10 @@ export default {
 
 <style scoped>
 .main.container {
+    margin-top: 30px;
+}
+
+.cookie.nag {
     margin-top: 30px;
 }
 </style>
