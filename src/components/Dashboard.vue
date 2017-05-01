@@ -29,8 +29,8 @@
         </transition>
         <div class="ui inline cookie nag">
             <span class="title">
-            我们使用Cookie以确保您获得最好的体验
-          </span>
+                    我们使用Cookie以确保您获得最好的体验
+                  </span>
             <i class="close icon"></i>
         </div>
     </div>
@@ -51,9 +51,15 @@ export default {
     },
     methods: {
         logout() {
-            this.$store.commit('withdraw');
-            this.$cookie.delete('jwt');
-            this.$router.push({ name: 'Login' });
+            this.$store.dispatch('logout')
+                .then(() => {
+                    this.tryRedirect();
+                });
+        },
+        tryRedirect() {
+            if (!this.$store.getters.profile) {
+                this.$router.push({ name: 'Login' });
+            }
         }
     }
 }

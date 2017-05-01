@@ -3,7 +3,7 @@
         <div class="column">
             <div v-if="!loading">
                 <h2 class="ui blue icon header"><i class="user icon"></i><div class="content">用户登陆</div></h2>
-                <form class="ui large form" @submit.prevent="login" :class="{loading:waiting, success, error}">
+                <form class="ui large form" @submit.prevent="login" :class="{loading:waiting, error:loginError}">
                     <div class="ui raised segment">
                         <div class="field">
                             <div class="ui left icon input">
@@ -20,13 +20,9 @@
                         <button class="ui fluid large blue submit button" type="submit">登陆</button>
                     </div>
     
-                    <div class="ui success message">
-                        <div class="header">登录成功</div>
-                        <p>{{ message }}</p>
-                    </div>
                     <div class="ui error message">
                         <div class="header">登陆失败</div>
-                        <p>{{ message }}</p>
+                        <p>{{ loginError }}</p>
                     </div>
     
                 </form>
@@ -47,98 +43,45 @@
 <script>
 "use strict";
 
+import { mapGetters, mapActions } from 'vuex';
+
 export default {
     name: 'Login',
     data() {
         return {
             account: '',
             password: '',
-            success: false,
             loading: false,
-            waiting: false,
-            error: false,
-            message: '',
-            jwt: null
+            waiting: false
         }
     },
+    computed: mapGetters(['profile', 'loginError']),
     methods: {
-        setState(success, message = '') {
-            this.success = success;
-            this.error = !success;
-            this.message = message;
-        },
-
-        getProfile(jwt) {
-            this.$http.get('/api/v1/account', {
-                headers: { 'Authorization': jwt }
-            })
-                .then(res => {
-                    this.$store.commit('grant', {
-                        jwt,
-                        profile: res.body
-                    });
-                    this.$cookie.set('jwt', jwt, {
-                        expires: '7D'
-                    });
-                    this.setState(true);
-                    this.$router.push({ name: 'Dashboard' });
-                    this.waiting = false;
-                })
-                .catch(err => {
-                    this.waiting = false;
-                    this.setState(false, err.statusText);
-                });
-        },
-
         login() {
-            if (!this.account) {
-                return this.setState(false, '请输入用户名或邮箱');
-            }
-            if (!this.password) {
-                return this.setState(false, '请输入密码');
-            }
             this.waiting = true;
-            this.$http.post('/api/v1/auth/login', {
+            this.$store.dispatch('login', {
                 account: this.account,
                 password: this.password
             })
-                .then(res => {
-                    if (res.body.success) {
-                        this.getProfile(res.body.token);
-                    }
-                    else {
-                        this.waiting = false;
-                        this.setState(false, res.body.message);
-                    }
-                })
-                .catch(err => {
+                .finally(() => {
                     this.waiting = false;
-                    this.setState(false, err.statusText);
+                    this.tryRedirect();
                 });
+        },
+
+        tryRedirect() {
+            if (this.profile) {
+                this.$router.push({ name: 'Dashboard' });
+            }
         }
     },
-    mounted() {
+    created() {
         this.loading = true;
-        const jwt = this.$cookie.get('jwt');
-        if (!jwt) {
-            this.loading = false;
-        }
-        else {
-            this.$http.get('/api/v1/account', {
-                headers: { 'Authorization': jwt }
-            })
-                .then(res => {
-                    this.$store.commit('grant', {
-                        jwt,
-                        profile: res.body
-                    });
-                    this.$router.push({ name: 'Dashboard' });
-                    this.loading = false;
-                })
-                .catch(err => {
-                    this.loading = false;
-                });
-        }
+        this.$store.dispatch('checkCookie')
+            .finally(() => {
+                this.loading = false;
+                this.tryRedirect();
+            });
     }
 }
 </script>

@@ -46,19 +46,19 @@
 
 <script>
 import moment from 'moment';
+import { mapGetters, mapActions } from 'vuex';
+
 export default {
     data() {
         return {
-            profile: {}
+
         }
     },
+    computed: mapGetters(['profile']),
     filters: {
         moment(date) {
             return moment(date).format('LL');
         }
-    },
-    mounted() {
-        this.profile = this.$store.state.profile;
     }
 }
 </script>
