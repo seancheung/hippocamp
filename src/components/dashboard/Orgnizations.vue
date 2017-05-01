@@ -63,7 +63,7 @@
                 </tr>
             </tfoot>
         </table>
-        <div class="ui small new modal">
+        <div class="ui small new org modal">
             <div class="header">新建组织</div>
             <div class="ui form content" :class="{error}">
                 <div class="required field">
@@ -84,7 +84,7 @@
                 <button class="ui positive button" :class="{disabled:!name, loading:busy}">确认</button>
             </div>
         </div>
-        <div class="ui edit modal">
+        <div class="ui small edit org modal">
             <div class="header">修改组织</div>
             <div class="ui form content" :class="{error}">
                 <div class="required field">
@@ -105,7 +105,7 @@
                 <button class="ui positive button" :class="{disabled:!name, loading:busy}">确认</button>
             </div>
         </div>
-        <div class="ui small show modal">
+        <div class="ui small show org modal">
             <div class="header">组织信息</div>
             <div class="ui center aligned container content">
                 <h2 class="ui icon header">
@@ -121,7 +121,7 @@
                 <div class="ui ok button">确认</div>
             </div>
         </div>
-        <div class="ui small remove modal">
+        <div class="ui small remove org modal">
             <div class="header">删除组织</div>
             <div class="content">
                 <div class="ui icon warning message">
@@ -175,7 +175,7 @@ export default {
             this.createdAt = null;
         },
         create() {
-            $('.ui.new.modal').modal({
+            $('.ui.new.org.modal').modal({
                 onApprove: () => {
                     this.$store.dispatch('orgnizations/create', {
                         name: this.name,
@@ -183,7 +183,7 @@ export default {
                     })
                         .finally(() => {
                             if (!this.err) {
-                                $('.ui.new.modal').modal('hide');
+                                $('.ui.new.org.modal').modal('hide');
                             } else {
                                 console.log(err);
                             }
@@ -198,7 +198,7 @@ export default {
         edit(item) {
             this.name = item.name;
             this.desc = item.desc;
-            $('.ui.edit.modal').modal({
+            $('.ui.edit.org.modal').modal({
                 onApprove: () => {
                     this.$store.dispatch('orgnizations/update', {
                         id: item.id,
@@ -209,7 +209,7 @@ export default {
                     })
                         .finally(() => {
                             if (!this.err) {
-                                $('.ui.edit.modal').modal('hide');
+                                $('.ui.edit.org.modal').modal('hide');
                             } else {
                                 console.log(err);
                             }
@@ -224,12 +224,12 @@ export default {
         remove(item) {
             this.name = item.name;
             this.desc = item.desc;
-            $('.ui.remove.modal').modal({
+            $('.ui.remove.org.modal').modal({
                 onDeny: () => {
                     this.$store.dispatch('orgnizations/delete', item._id)
                         .finally(() => {
                             if (!this.err) {
-                                $('.ui.remove.modal').modal('hide');
+                                $('.ui.remove.org.modal').modal('hide');
                             } else {
                                 console.log(err);
                             }
@@ -245,7 +245,7 @@ export default {
             this.name = item.name;
             this.desc = item.desc;
             this.createdAt = item.createdAt;
-            $('.ui.show.modal').modal({
+            $('.ui.show.org.modal').modal({
                 onHidden: () => {
                     this.reset();
                 }

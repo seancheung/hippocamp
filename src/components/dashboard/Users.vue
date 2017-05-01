@@ -67,16 +67,38 @@
                 </tr>
             </tfoot>
         </table>
-        <div class="ui small new modal">
+        <div class="ui small new user modal">
             <div class="header">新建用户</div>
             <div class="ui form content" :class="{error}">
                 <div class="required field">
                     <label>用户名</label>
-                    <input type="text" v-model="name" placeholder="请输入组织名称"></input>
+                    <input type="text" v-model="name" placeholder="请输入用户名"></input>
+                </div>
+                <div class="required field">
+                    <label>邮箱</label>
+                    <input type="text" v-model="email" placeholder="请输入邮箱"></input>
+                </div>
+                <div class="required field">
+                    <label>密码</label>
+                    <input type="password" v-model="password" placeholder="请输入密码"></input>
+                </div>
+                <div class="required field">
+                    <label>确认密码</label>
+                    <input type="password" v-model="confirm" placeholder="请确认密码"></input>
+                </div>
+                <div class="required field">
+                    <label>身份</label>
+                    <select class="ui dropdown" v-model="role">
+                        <option v-for="role in roles" :value="role">{{role}}</option>
+                    </select>
                 </div>
                 <div class="field">
-                    <label>邮箱</label>
-                    <input v-model="email" placeholder="描述..."></input>
+                    <label>姓</label>
+                    <input type="text" v-model="lastName" placeholder="请输入姓"></input>
+                </div>
+                <div class="field">
+                    <label>名</label>
+                    <input type="text" v-model="firstName" placeholder="请输入名"></input>
                 </div>
                 <div class="ui error message">
                     <div class="header">操作失败</div>
@@ -85,10 +107,10 @@
             </div>
             <div class="actions">
                 <button class="ui cancel button" :class="{loading:busy}">取消</button>
-                <button class="ui positive button" :class="{disabled:!name, loading:busy}">确认</button>
+                <button class="ui positive button" :class="{disabled:!isValid, loading:busy}">确认</button>
             </div>
         </div>
-        <div class="ui edit modal">
+        <div class="ui small edit user modal">
             <div class="header">修改用户</div>
             <div class="ui form content" :class="{error}">
                 <div class="required field">
@@ -97,7 +119,7 @@
                 </div>
                 <div class="field">
                     <label>邮箱</label>
-                    <input v-model="email" placeholder="描述..."></input>
+                    <input type="text" v-model="email" placeholder="描述..."></input>
                 </div>
                 <div class="ui error message">
                     <div class="header">操作失败</div>
@@ -109,23 +131,23 @@
                 <button class="ui positive button" :class="{disabled:!name, loading:busy}">确认</button>
             </div>
         </div>
-        <div class="ui small show modal">
+        <div class="ui small show usr modal">
             <div class="header">用户信息</div>
             <div class="ui center aligned container content">
                 <h2 class="ui icon header">
-                            <i class="group icon"></i>
-                            <div class="content">
-                                {{name}}
-                                <div class="sub header">{{createdAt | moment}}</div>
-                                <div>{{email}}</div>
-                            </div>
-                        </h2>
+                                                <i class="group icon"></i>
+                                                <div class="content">
+                                                    {{name}}
+                                                    <div class="sub header">{{createdAt | moment}}</div>
+                                                    <div>{{email}}</div>
+                                                </div>
+                                            </h2>
             </div>
             <div class="actions">
                 <div class="ui ok button">确认</div>
             </div>
         </div>
-        <div class="ui small remove modal">
+        <div class="ui small remove user modal">
             <div class="header">删除用户</div>
             <div class="content">
                 <div class="ui icon warning message">
@@ -152,7 +174,13 @@ export default {
         return {
             name: null,
             email: null,
-            createdAt: null
+            createdAt: null,
+            password: null,
+            confirm: null,
+            firstName: null,
+            lastName: null,
+            role: 'Member',
+            roles: ['Member', 'Client', 'Admin', 'SuperAdmin']
         }
     },
     filters: {
@@ -172,6 +200,9 @@ export default {
             set(value) {
                 this.$store.dispatch('users/filter', value);
             }
+        },
+        isValid() {
+            return this.name && this.email && this.password && this.confirm == this.password && this.role;
         }
     },
     methods: {
@@ -180,9 +211,14 @@ export default {
             this.name = null;
             this.email = null;
             this.createdAt = null;
+            this.password = null;
+            this.confirm = null;
+            this.firstName = null;
+            this.lastName = null;
+            this.role = 'Member';
         },
         create() {
-            $('.ui.new.modal').modal({
+            $('.ui.new.user.modal').modal({
                 onApprove: () => {
                     this.$store.dispatch('users/create', {
                         name: this.name,
@@ -190,7 +226,7 @@ export default {
                     })
                         .finally(() => {
                             if (!this.err) {
-                                $('.ui.new.modal').modal('hide');
+                                $('.ui.new.user.modal').modal('hide');
                             } else {
                                 console.log(err);
                             }
@@ -205,7 +241,7 @@ export default {
         edit(item) {
             this.name = item.name;
             this.email = item.email;
-            $('.ui.edit.modal').modal({
+            $('.ui.edit.user.modal').modal({
                 onApprove: () => {
                     this.$store.dispatch('users/update', {
                         id: item.id,
@@ -216,7 +252,7 @@ export default {
                     })
                         .finally(() => {
                             if (!this.err) {
-                                $('.ui.edit.modal').modal('hide');
+                                $('.ui.edit.user.modal').modal('hide');
                             } else {
                                 console.log(err);
                             }
@@ -231,12 +267,12 @@ export default {
         remove(item) {
             this.name = item.name;
             this.email = item.email;
-            $('.ui.remove.modal').modal({
+            $('.ui.remove.user.modal').modal({
                 onDeny: () => {
                     this.$store.dispatch('users/delete', item._id)
                         .finally(() => {
                             if (!this.err) {
-                                $('.ui.remove.modal').modal('hide');
+                                $('.ui.remove.user.modal').modal('hide');
                             } else {
                                 console.log(err);
                             }
@@ -252,7 +288,7 @@ export default {
             this.name = item.name;
             this.email = item.email;
             this.createdAt = item.createdAt;
-            $('.ui.show.modal').modal({
+            $('.ui.show.user.modal').modal({
                 onHidden: () => {
                     this.reset();
                 }
