@@ -1,9 +1,12 @@
-import * as types from '../types';
 import Vue from 'vue';
 import VueCookie from 'vue-cookie';
 import Promise from 'bluebird';
 
 Vue.use(VueCookie);
+
+const types = {
+    RECEIVE_PROFILE: 'RECEIVE_PROFILE'
+};
 
 const state = {
     profile: null,

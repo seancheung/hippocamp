@@ -1,6 +1,6 @@
 <template>
     <div class="ui contianer">
-        <crud-table :fields="fields" :search="search" @input="value => search = value" @add="create" @refresh="list" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :pagination="pagination" @paginate="paginate"></crud-table>
+        <crud-table :fields="fields" :index="'name'" @add="create" @refresh="list" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :pagination="pagination" @paginate="paginate"></crud-table>
         <div class="ui small new user modal">
             <div class="header">新建用户</div>
             <div class="ui form content" :class="{error}">
@@ -40,7 +40,7 @@
                 </div>
             </div>
             <div class="actions">
-                <button class="ui cancel button" :class="{loading:busy}">取消</button>
+                <button class="ui cancel button" :class="{disabled:busy}">取消</button>
                 <button class="ui positive button" :class="{disabled:!isValid, loading:busy}">确认</button>
             </div>
         </div>
@@ -61,7 +61,7 @@
                 </div>
             </div>
             <div class="actions">
-                <button class="ui cancel button" :class="{loading:busy}">取消</button>
+                <button class="ui cancel button" :class="{disabled:busy}">取消</button>
                 <button class="ui positive button" :class="{disabled:!name, loading:busy}">确认</button>
             </div>
         </div>
@@ -93,7 +93,7 @@
                 </div>
             </div>
             <div class="actions">
-                <div class="ui ok button" :class="{loading:busy}">取消</div>
+                <div class="ui ok button" :class="{disabled:busy}">取消</div>
                 <div class="ui negative button" :class="{loading:busy}">确认</div>
             </div>
         </div>
@@ -163,14 +163,6 @@ export default {
     },
     computed: {
         ...mapGetters('users', ['items', 'busy', 'error', 'pagination']),
-        search: {
-            get() {
-                return this.$store.state.users.filter || '';
-            },
-            set(value) {
-                this.$store.dispatch('users/filter', value);
-            }
-        },
         isValid() {
             return this.name && this.email && this.password && this.confirm == this.password && this.role;
         }

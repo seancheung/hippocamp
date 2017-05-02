@@ -7,25 +7,22 @@ const types = {
     READ_ITEM: 'READ_ITEM',
     DELETE_ITEM: 'DELETE_ITEM',
     BEGIN_REQUEST: 'BEGIN_REQUEST',
-    UPDATE_FILTER: 'UPDATE_FILTER',
     PAGINATE_ITEMS: 'PAGINATE_ITEMS'
 };
 
 export default class Restify {
-    constructor(url, key = null) {
+    constructor(url) {
         this.namespaced = true;
         this.state = this.mountState;
         this.getters = this.mountGetters;
         this.actions = this.mountActions;
         this.mutations = this.mountMutations;
         this.url = url;
-        this.key = key;
     }
 
     get mountState() {
         return {
             items: [],
-            filter: null,
             error: null,
             busy: false,
             pagination: {
@@ -39,7 +36,7 @@ export default class Restify {
 
     get mountGetters() {
         return {
-            items: state => this.key && state.filter ? state.items.filter(i => i[this.key].includes(state.filter)) : state.items,
+            items: state => state.items,
             count: state => state.items.length,
             pagination: state => state.pagination,
             error: state => state.error,
@@ -99,9 +96,6 @@ export default class Restify {
                     .catch(err => {
                         commit(types.DELETE_ITEM, {err: err.message});
                     });
-            },
-            filter({commit}, value) {
-                commit(types.UPDATE_FILTER, value);
             },
             paginate({commit, dispatch}, index) {
                 commit(types.PAGINATE_ITEMS, index);
@@ -163,10 +157,6 @@ export default class Restify {
                 }
                 state.error = null;
                 state.busy = true;
-            },
-
-            [types.UPDATE_FILTER](state, value) {
-                state.filter = value;
             },
 
             [types.PAGINATE_ITEMS](state, index) {
