@@ -2,7 +2,7 @@ import Restify from './restify';
 
 class Users extends Restify {
     constructor() {
-        super('api/v1/users', 'name');
+        super('api/v1/users');
     }
 }
 

@@ -1,74 +1,6 @@
 <template>
     <div class="ui contianer">
-        <table class="ui very basic celled striped table">
-            <thead class="full-width">
-                <tr class="borderless">
-                    <th colspan="6" >
-                        <div class="ui search">
-                            <div class="ui small icon input">
-                                <input type="text" placeholder="搜索..." v-model="search"><i class="search icon"></i>
-                            </div>
-                        </div>
-                    </th>
-                    <th>
-                        <div class="ui two small icon buttons">
-                            <button class="ui new positive icon button" :class="{disabled:busy}" @click="create">
-                                <i class="add icon"></i>
-                            </button>
-                            <button class="ui icon button" :class="{disabled:busy}" @click="list">
-                                <i class="refresh icon"></i>
-                            </button>
-                        </div>
-                    </th>
-                </tr>
-                <tr>
-                    <th class="one wide"></th>
-                    <th class="three wide">用户名</th>
-                    <th class="three wide">邮箱</th>
-                    <th class="three wide">姓名</th>
-                    <th class="two wide">身份</th>
-                    <th class="two wide">创建于</th>
-                    <th class="two wide"></th>
-                </tr>
-            </thead>
-            <!--<tbody>-->
-            <transition-group name="fade" tag="tbody">
-                <tr v-for="(item, index) in items" v-bind:key="index">
-                    <td>
-                        {{index + 1}}
-                    </td>
-                    <td><a @click.prevent="show(item)">{{item.name}}</a></td>
-                    <td>{{item.email}}</td>
-                    <td>{{item.profile | formatName }}</td>
-                    <td>{{item.role}}</td>
-                    <td>{{item.createdAt | moment}}</td>
-                    <td>
-                        <div class="ui two small icon buttons">
-                            <button class="ui edit button" :class="{disabled:busy}" @click="edit(item)"><i class="edit icon"></i></button>
-                            <button class="ui negative delete button" :class="{disabled:busy}" @click="remove(item)"><i class="delete icon"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            </transition-group>
-            <!--</tbody>-->
-            <tfoot class="full-width" v-if="items.length > 0">
-                <tr>
-                    <th colspan="7">
-                        <div class="ui center aligned container" v-if="pagination.total > 1">
-                            <div class="ui borderless pagination menu">
-                                <a class="icon item" :class="{disabled: pagination.current <= 1}" @click="paginate(pagination.current - 1)">
-                                    <i class="left chevron icon"></i>
-                                </a>
-                                <a v-for="p in pagination.total" class="item" :class="{active: p == pagination.current}" @click="paginate(p)">{{p}}</a>
-                                <a class="icon item" :class="{disabled: pagination.current >= pagination.total}" @click="paginate(pagination.current + 1)">
-                                    <i class="right chevron icon"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </th>
-                </tr>
-            </tfoot>
-        </table>
+        <crud-table :fields="fields" :index="'name'" @add="create" @refresh="list" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :pagination="pagination" @paginate="paginate"></crud-table>
         <div class="ui small new user modal">
             <div class="header">新建用户</div>
             <div class="ui form content" :class="{error}">
@@ -108,7 +40,7 @@
                 </div>
             </div>
             <div class="actions">
-                <button class="ui cancel button" :class="{loading:busy}">取消</button>
+                <button class="ui cancel button" :class="{disabled:busy}">取消</button>
                 <button class="ui positive button" :class="{disabled:!isValid, loading:busy}">确认</button>
             </div>
         </div>
@@ -129,21 +61,21 @@
                 </div>
             </div>
             <div class="actions">
-                <button class="ui cancel button" :class="{loading:busy}">取消</button>
+                <button class="ui cancel button" :class="{disabled:busy}">取消</button>
                 <button class="ui positive button" :class="{disabled:!name, loading:busy}">确认</button>
             </div>
         </div>
-        <div class="ui small show usr modal">
+        <div class="ui small show user modal">
             <div class="header">用户信息</div>
             <div class="ui center aligned container content">
                 <h2 class="ui icon header">
-                                                        <i class="group icon"></i>
-                                                        <div class="content">
-                                                            {{name}}
-                                                            <div class="sub header">{{createdAt | moment}}</div>
-                                                            <div>{{email}}</div>
-                                                        </div>
-                                                    </h2>
+                        <i class="group icon"></i>
+                        <div class="content">
+                            {{name}}
+                            <div class="sub header">{{createdAt | moment}}</div>
+                            <div>{{email}}</div>
+                        </div>
+                    </h2>
             </div>
             <div class="actions">
                 <div class="ui ok button">确认</div>
@@ -161,7 +93,7 @@
                 </div>
             </div>
             <div class="actions">
-                <div class="ui ok button" :class="{loading:busy}">取消</div>
+                <div class="ui ok button" :class="{disabled:busy}">取消</div>
                 <div class="ui negative button" :class="{loading:busy}">确认</div>
             </div>
         </div>
@@ -170,8 +102,15 @@
 
 <script>
 import moment from 'moment';
-import { mapGetters, mapActions } from 'vuex';
+import {
+    mapGetters,
+    mapActions
+} from 'vuex';
+import CrudTable from '../shared/CrudTable';
 export default {
+    components: {
+        'crud-table': CrudTable
+    },
     data() {
         return {
             name: null,
@@ -182,7 +121,36 @@ export default {
             firstName: null,
             lastName: null,
             role: 'Member',
-            roles: ['Member', 'Client', 'Admin', 'SuperAdmin']
+            roles: ['Member', 'Client', 'Admin', 'SuperAdmin'],
+            fields: [{
+                width: 'three',
+                name: '用户名',
+                key: 'name',
+                primary: true
+            },
+            {
+                width: 'three',
+                name: '邮箱',
+                key: 'email'
+            },
+            {
+                width: 'three',
+                name: '姓名',
+                key: 'profile',
+                format: value => value ? (value.firstName + ' ' + value.lastName).trim() : ''
+            },
+            {
+                width: 'two',
+                name: '身份',
+                key: 'role'
+            },
+            {
+                width: 'two',
+                name: '创建于',
+                key: 'createdAt',
+                format: value => moment(value).format('L')
+            }
+            ]
         }
     },
     filters: {
@@ -195,14 +163,6 @@ export default {
     },
     computed: {
         ...mapGetters('users', ['items', 'busy', 'error', 'pagination']),
-        search: {
-            get() {
-                return this.$store.state.users.filter || '';
-            },
-            set(value) {
-                this.$store.dispatch('users/filter', value);
-            }
-        },
         isValid() {
             return this.name && this.email && this.password && this.confirm == this.password && this.role;
         }
