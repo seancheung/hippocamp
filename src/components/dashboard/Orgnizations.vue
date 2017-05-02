@@ -2,20 +2,22 @@
     <div class="ui contianer">
         <table class="ui very basic celled striped table">
             <thead class="full-width">
-                <tr>
-                    <th colspan="5">
-                        <div class="ui right floated tiny buttons">
+                <tr class="borderless">
+                    <th colspan="4" >
+                        <div class="ui search">
+                            <div class="ui small icon input">
+                                <input type="text" placeholder="搜索..." v-model="search"><i class="search icon"></i>
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="ui two small icon buttons">
                             <button class="ui new positive icon button" :class="{disabled:busy}" @click="create">
                                 <i class="add icon"></i>
                             </button>
                             <button class="ui icon button" :class="{disabled:busy}" @click="list">
                                 <i class="refresh icon"></i>
                             </button>
-                        </div>
-                        <div class="ui search">
-                            <div class="ui small icon input">
-                                <input type="text" placeholder="搜索..." v-model="search"><i class="search icon"></i>
-                            </div>
                         </div>
                     </th>
                 </tr>
@@ -45,10 +47,10 @@
                 </tr>
             </transition-group>
             <!--</tbody>-->
-            <tfoot class="full-width">
+            <tfoot class="full-width" v-if="items.length > 0">
                 <tr>
                     <th colspan="5">
-                        <div class="ui center aligned container">
+                        <div class="ui center aligned container" v-if="pagination.total > 1">
                             <div class="ui borderless pagination menu">
                                 <a class="icon item" :class="{disabled: pagination.current <= 1}" @click="paginate(pagination.current - 1)">
                                     <i class="left chevron icon"></i>
@@ -153,11 +155,11 @@ export default {
     },
     filters: {
         moment(date) {
-            return moment(date).format('LL');
+            return moment(date).format('L');
         }
     },
     computed: {
-        ...mapGetters('orgnizations', ['items', 'busy', 'error', 'pagination']),
+        ...mapGetters('orgnizations', ['items', 'busy', 'error', 'pagination', 'count']),
         search: {
             get() {
                 return this.$store.state.orgnizations.filter || '';
@@ -265,5 +267,9 @@ export default {
 
 a:hover {
     cursor: pointer;
+}
+
+.ui.celled.table tr.borderless th {
+    border-left: 0;
 }
 </style>

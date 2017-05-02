@@ -41,14 +41,14 @@
 
 export default {
     name: 'Dashboard',
-    mounted() {
-        $.cookie = this.$cookie.get;
-        $('.cookie.nag')
-            .nag({
-                key: 'accepts-cookies',
-                value: true
-            });
-    },
+    // mounted() {
+    //     $.cookie = this.$cookie.get;
+    //     $('.cookie.nag')
+    //         .nag({
+    //             key: 'accepts-cookies',
+    //             value: true
+    //         });
+    // },
     methods: {
         logout() {
             this.$store.dispatch('logout')
