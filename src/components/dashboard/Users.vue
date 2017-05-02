@@ -95,16 +95,16 @@
             <div class="header">用户信息</div>
             <div class="ui center aligned container content">
                 <h2 class="ui icon header">
-                            <i class="user icon"></i>
-                            <div class="content">
-                                {{name}}
-                                <div class="sub header">{{createdAt | moment}}</div>
-                                <div>{{email}}</div>
-                                <div>{{role}}</div>
-                                <div v-if="firstName && lastName">{{firstName + ' ' + lastName}}</div>
-                                <div v-if="orgnization">{{orgnization | formatOrgnization}}</div>
-                            </div>
-                        </h2>
+                                <i class="user icon"></i>
+                                <div class="content">
+                                    {{name}}
+                                    <div class="sub header">{{createdAt | moment}}</div>
+                                    <div>{{email}}</div>
+                                    <div>{{role}}</div>
+                                    <div v-if="firstName && lastName">{{firstName + ' ' + lastName}}</div>
+                                    <div v-if="orgnization">{{orgnization | formatOrgnization}}</div>
+                                </div>
+                            </h2>
             </div>
             <div class="actions">
                 <div class="ui ok button">确认</div>
@@ -258,14 +258,16 @@ export default {
                     if (this.orgnization) {
                         data.org = this.orgnization;
                     }
-                    this.$store.dispatch('users/create', data)
-                        .finally(() => {
-                            if (!this.error) {
-                                $('.ui.new.user.modal').modal('hide');
-                            } else {
-                                console.log(this.error);
-                            }
-                        });
+                    this.$store.dispatch('orgnizations/list', true).then(() => {
+                        this.$store.dispatch('users/create', data)
+                            .finally(() => {
+                                if (!this.error) {
+                                    $('.ui.new.user.modal').modal('hide');
+                                } else {
+                                    console.log(this.error);
+                                }
+                            });
+                    });
                     return false;
                 },
                 onHidden: () => {
@@ -354,23 +356,10 @@ export default {
     },
     created() {
         this.list(true);
-        if (!this.orgnizations) {
-            this.$store.dispatch('orgnizations/list', true);
-        }
     }
 }
 </script>
 
 <style scoped>
-.ui.search {
-    display: inline-block;
-}
 
-a:hover {
-    cursor: pointer;
-}
-
-.ui.celled.table tr.borderless th {
-    border-left: 0;
-}
 </style>

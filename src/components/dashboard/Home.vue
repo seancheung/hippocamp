@@ -1,5 +1,5 @@
 <template>
-    <div class="profile">
+    <div class="ui container">
         <h3 class="ui top attached header">{{profile.name}}, 你好!</h3>
         <div class="ui attached piled segment">
             <dl>
@@ -40,10 +40,6 @@ export default {
 </script>
 
 <style scoped>
-.profile {
-    margin-top: 60px;
-}
-
 dl {
     padding: 0.5em;
     margin: 0;

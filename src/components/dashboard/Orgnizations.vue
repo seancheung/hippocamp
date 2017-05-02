@@ -214,15 +214,5 @@ export default {
 </script>
 
 <style scoped>
-.ui.search {
-    display: inline-block;
-}
 
-a:hover {
-    cursor: pointer;
-}
-
-.ui.celled.table tr.borderless th {
-    border-left: 0;
-}
 </style>
