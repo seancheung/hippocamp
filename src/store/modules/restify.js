@@ -47,15 +47,25 @@ export default class Restify {
 
     get mountActions() {
         return {
-            list({commit, getters}) {
+            list({commit, getters}, pagination) {
                 commit(types.BEGIN_REQUEST, true);
-                return Vue.http.get(getters.url + '?s=' + getters.pagination.limit + '&p=' + getters.pagination.current)
-                    .then(res => {
-                        commit(types.LIST_ITEMS, {items: res.body.docs, pagination: res.body.pagination});
-                    })
-                    .catch(err => {
-                        commit(types.LIST_ITEMS, {err: err.message});
-                    });
+                if(pagination) {
+                    return Vue.http.get(getters.url + '?s=' + getters.pagination.limit + '&p=' + getters.pagination.current)
+                        .then(res => {
+                            commit(types.LIST_ITEMS, {items: res.body.docs, pagination: res.body.pagination});
+                        })
+                        .catch(res => {
+                            commit(types.LIST_ITEMS, {err: res.body.message});
+                        });
+                } else {
+                    return Vue.http.get(getters.url)
+                        .then(res => {
+                            commit(types.LIST_ITEMS, {items: res.body});
+                        })
+                        .catch(res => {
+                            commit(types.LIST_ITEMS, {err: res.body.message});
+                        });
+                }
             },
             create({commit, getters}, data) {
                 commit(types.BEGIN_REQUEST);
@@ -63,18 +73,18 @@ export default class Restify {
                     .then(res => {
                         commit(types.CREATE_ITEM, {item: res.body});
                     })
-                    .catch(err => {
-                        commit(types.CREATE_ITEM, {err: err.message});
+                    .catch(res => {
+                        commit(types.CREATE_ITEM, {err: res.body.message});
                     });
             },
             update({commit, getters}, {id, data}) {
                 commit(types.BEGIN_REQUEST);
-                return Vue.http.post(getters.url + '/' + id, data)
+                return Vue.http.put(getters.url + '/' + id, data)
                     .then(res => {
                         commit(types.UPDATE_ITEM, {item: res.body});
                     })
-                    .catch(err => {
-                        commit(types.UPDATE_ITEM, {err: err.message});
+                    .catch(res => {
+                        commit(types.UPDATE_ITEM, {err: res.body.message});
                     });
             },
             read({commit, getters}, id) {
@@ -83,8 +93,8 @@ export default class Restify {
                     .then(res => {
                         commit(types.READ_ITEM, {item: res.body});
                     })
-                    .catch(err => {
-                        commit(types.READ_ITEM, {err: err.message});
+                    .catch(res => {
+                        commit(types.READ_ITEM, {err: res.body.message});
                     });
             },
             delete({commit, getters}, id) {
@@ -93,13 +103,13 @@ export default class Restify {
                     .then(res => {
                         commit(types.DELETE_ITEM, {id});
                     })
-                    .catch(err => {
-                        commit(types.DELETE_ITEM, {err: err.message});
+                    .catch(res => {
+                        commit(types.DELETE_ITEM, {err: res.body.message});
                     });
             },
             paginate({commit, dispatch}, index) {
                 commit(types.PAGINATE_ITEMS, index);
-                return dispatch('list');
+                return dispatch('list', true);
             }
         };
     }
@@ -108,7 +118,7 @@ export default class Restify {
         return {
             [types.LIST_ITEMS](state, {items, pagination, err}) {
                 if(!err) {
-                    state.pagination = pagination;
+                    state.pagination = pagination || {limit: 20, current: 0, total: 0, count: 0};
                 }
                 state.items = items || [];
                 state.error = err;

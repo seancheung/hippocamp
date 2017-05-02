@@ -1,6 +1,6 @@
 <template>
     <div class="ui contianer">
-        <crud-table :fields="fields" :index="'name'" @add="create" @refresh="list" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :pagination="pagination" @paginate="paginate" ></crud-table>
+        <crud-table :fields="fields" :index="'name'" @add="create" @refresh="list(true)" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :pagination="pagination" @paginate="paginate" ></crud-table>
         <div class="ui small new org modal">
             <div class="header">新建组织</div>
             <div class="ui form content" :class="{error}">
@@ -127,16 +127,17 @@ export default {
         },
         create() {
             $('.ui.new.org.modal').modal({
+                detachable: false,
                 onApprove: () => {
                     this.$store.dispatch('orgnizations/create', {
                         name: this.name,
                         desc: this.desc
                     })
                         .finally(() => {
-                            if (!this.err) {
+                            if (!this.error) {
                                 $('.ui.new.org.modal').modal('hide');
                             } else {
-                                console.log(err);
+                                console.log(this.error);
                             }
                         });
                     return false;
@@ -150,19 +151,20 @@ export default {
             this.name = item.name;
             this.desc = item.desc;
             $('.ui.edit.org.modal').modal({
+                detachable: false,
                 onApprove: () => {
                     this.$store.dispatch('orgnizations/update', {
-                        id: item.id,
+                        id: item._id,
                         data: {
                             name: this.name,
                             desc: this.desc
                         }
                     })
                         .finally(() => {
-                            if (!this.err) {
+                            if (!this.error) {
                                 $('.ui.edit.org.modal').modal('hide');
                             } else {
-                                console.log(err);
+                                console.log(this.error);
                             }
                         });
                     return false;
@@ -176,13 +178,14 @@ export default {
             this.name = item.name;
             this.desc = item.desc;
             $('.ui.remove.org.modal').modal({
+                detachable: false,
                 onDeny: () => {
                     this.$store.dispatch('orgnizations/delete', item._id)
                         .finally(() => {
-                            if (!this.err) {
+                            if (!this.error) {
                                 $('.ui.remove.org.modal').modal('hide');
                             } else {
-                                console.log(err);
+                                console.log(this.error);
                             }
                         });
                     return false;
@@ -197,6 +200,7 @@ export default {
             this.desc = item.desc;
             this.createdAt = item.createdAt;
             $('.ui.show.org.modal').modal({
+                detachable: false,
                 onHidden: () => {
                     this.reset();
                 }
@@ -204,7 +208,7 @@ export default {
         }
     },
     created() {
-        this.list();
+        this.list(true);
     }
 }
 </script>
