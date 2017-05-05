@@ -33,7 +33,7 @@
                     {{index + 1 + (page - 1) * limit}}
                 </td>
                 <td v-for="field in fields">
-                    <a v-if="field.primary" @click.prevent="show(item)">
+                    <a v-if="field.primary && show" @click.prevent="show(item)">
                                 {{field.format? field.format(item[field.key]): item[field.key]}}
                         </a>
                     <span v-else>
@@ -42,14 +42,14 @@
                 </td>
                 <td>
                     <div class="ui small icon buttons">
-                        <button class="ui edit button" :class="{disabled}" @click="edit(item)"><i class="edit icon"></i></button>
+                        <button v-if="!readonly" class="ui edit button" :class="{disabled}" @click="edit(item)"><i class="edit icon"></i></button>
                         <button class="ui negative delete button" :class="{disabled}" @click="remove(item)"><i class="delete icon"></i></button>
                     </div>
                 </td>
             </tr>
         </transition-group>
         <!--</tbody>-->
-        <tfoot v-if="filteredItems.length > 0">
+        <tfoot v-if="filteredItems && filteredItems.length > 0">
             <tr>
                 <th :colspan="fields.length + 2">
                     <div class="ui center aligned basic segment" v-if="pages > 1">
@@ -81,6 +81,7 @@ export default {
     props: {
         fields: Array,
         disabled: Boolean,
+        readonly: Boolean,
         items: Array,
         index: String,
         page: Number,
@@ -92,9 +93,9 @@ export default {
             if (!this.search || !this.index) {
                 return this.items;
             }
-            if (Array.isArray(this.index)) {
+            if (Array.isArray(this.index) && this.index.length) {
                 return this.items.filter(i => {
-                    for (var n = 0; n < this.index.length; n++) {
+                    for (let n = 0; n < this.index.length; n++) {
                         if (i[this.index[n]].includes(this.search)) {
                             return true;
                         }

@@ -11,15 +11,23 @@ export default {
     mode: String,
     text: String,
     label: String,
-    size: Number,
-    mSize: Number,
+    size: [Number, String],
+    mSize: [Number, String],
     fontcolor: String,
     ecLevel: String,
-    quiet: Number,
+    quiet: [Number, String],
     tooltip: String
   },
   mounted() {
     this.generate();
+  },
+  watch: {
+    size: function () {
+      this.generate();
+    },
+    text: function () {
+      this.generate();
+    }
   },
   methods: {
     generate() {
@@ -34,7 +42,12 @@ export default {
         quiet: this.quiet || 1
       });
       $(el).attr('name', this.label);
-      this.$el.appendChild(el);
+      if (this.$el.firstChild) {
+        this.$el.replaceChild(el, this.$el.firstChild);
+      }
+      else {
+        this.$el.appendChild(el);
+      }
       if (this.tooltip) {
         $(this.$el).attr('data-tooltip', this.tooltip);
       }

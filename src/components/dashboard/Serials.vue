@@ -12,6 +12,12 @@
                     <div v-if="mode == 'qrcode'" class="ui container" key="qrcode">
                         <div class="ui secondary menu">
                             <div class="item">
+                                <select class="ui compact selection dropdown" v-model="size">
+                                    <option disabled>尺寸(px)</option>
+                                    <option value="96">96</option>
+                                    <option value="128">128</option>
+                                    <option value="256">256</option>
+                                </select>
                             </div>
                             <div class="right item">
                                 <div class="ui small icon buttons">
@@ -28,7 +34,7 @@
                             </div>
                         </div>
                         <div class="ui container">
-                            <qrcode v-for="item in items" :key="item._id" :text="item.sno" :label="item.sno" :size="140" :tooltip="getOrgnization(item.org)" :fontcolor="item.device? '#f44265':'#4286f4'"></qrcode>
+                            <qrcode v-for="item in items" :key="item._id" :text="item.sno" :label="item.sno" :size="size" :tooltip="getOrgnization(item.org)" :fontcolor="item.device? '#f44265':'#4286f4'"></qrcode>
                         </div>
                         <div class="ui center aligned basic segment" v-if="pages > 1">
                             <div class="ui borderless pagination menu">
@@ -43,7 +49,7 @@
                         </div>
                     </div>
                     <div v-else class="ui container" key="list">
-                        <crud-table :fields="fields" :index="'sno'" @add="create" @refresh="list" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :page="page" :pages="pages" :limit="limit" @paginate="paginate"></crud-table>
+                        <crud-table :fields="fields" :index="'sno'" @add="create" @refresh="list" :disabled="busy" :items="items" @remove="remove" :page="page" :pages="pages" :limit="limit" @paginate="paginate" readonly></crud-table>
                     </div>
                 </transition>
             </div>
@@ -71,12 +77,28 @@
                 <button class="ui positive button" :class="{disabled:!isValid, loading:busy}">确认</button>
             </div>
         </div>
+        <div class="ui small remove serial modal">
+            <div class="header">删除序列号</div>
+            <div class="content">
+                <div class="ui icon warning message">
+                    <i class="warning icon"></i>
+                    <div class="content">
+                        <div class="header">确认删除<b>{{sno}}</b>?</div>
+                        此操作不可撤销
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui ok button" :class="{disabled:busy}">取消</div>
+                <div class="ui negative button" :class="{loading:busy}">确认</div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
 import JSZip from 'jszip';
-import {saveAs} from 'file-saver';
+import { saveAs } from 'file-saver';
 import moment from 'moment';
 import {
     mapGetters,
@@ -95,11 +117,12 @@ export default {
             mode: 'list',
             amount: 10,
             orgnization: null,
+            size: 128,
+            sno: null,
             fields: [{
                 width: 'four',
                 name: '序列号',
-                key: 'sno',
-                primary: true
+                key: 'sno'
             },
             {
                 width: 'two',
@@ -107,7 +130,7 @@ export default {
                 key: 'org',
                 format: value => {
                     if (value) {
-                        for (var i = 0; i < this.orgnizations.length; i++) {
+                        for (let i = 0; i < this.orgnizations.length; i++) {
                             if (this.orgnizations[i]._id == value) {
                                 return this.orgnizations[i].name;
                             }
@@ -142,6 +165,7 @@ export default {
         reset() {
             this.amount = 10;
             this.orgnization = null;
+            this.sno = null;
         },
         create() {
             $('.ui.new.serial.modal').modal({
@@ -167,18 +191,29 @@ export default {
                 }
             }).modal('show');
         },
-        edit(item) {
-
-        },
         remove(item) {
-
-        },
-        show(item) {
-
+            this.sno = item.sno;
+            $('.ui.remove.serial.modal').modal({
+                detachable: false,
+                onDeny: () => {
+                    this.$store.dispatch('serials/delete', item._id)
+                        .finally(() => {
+                            if (!this.error) {
+                                $('.ui.remove.serial.modal').modal('hide');
+                            } else {
+                                console.log(this.error);
+                            }
+                        });
+                    return false;
+                },
+                onHidden: () => {
+                    this.reset();
+                }
+            }).modal('show');
         },
         getOrgnization(data) {
             if (data) {
-                for (var i = 0; i < this.orgnizations.length; i++) {
+                for (let i = 0; i < this.orgnizations.length; i++) {
                     if (this.orgnizations[i]._id == data) {
                         return this.orgnizations[i].name;
                     }

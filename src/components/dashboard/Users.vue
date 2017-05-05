@@ -95,16 +95,16 @@
             <div class="header">用户信息</div>
             <div class="ui center aligned container content">
                 <h2 class="ui icon header">
-                                <i class="user icon"></i>
-                                <div class="content">
-                                    {{name}}
-                                    <div class="sub header">{{createdAt | moment}}</div>
-                                    <div>{{email}}</div>
-                                    <div>{{role}}</div>
-                                    <div v-if="firstName && lastName">{{firstName + ' ' + lastName}}</div>
-                                    <div v-if="orgnization">{{orgnization | formatOrgnization}}</div>
-                                </div>
-                            </h2>
+                                        <i class="user icon"></i>
+                                        <div class="content">
+                                            {{name}}
+                                            <div class="sub header">{{createdAt | moment}}</div>
+                                            <div>{{email}}</div>
+                                            <div>{{role}}</div>
+                                            <div v-if="firstName && lastName">{{firstName + ' ' + lastName}}</div>
+                                            <div v-if="orgnization">{{getOrgnization(orgnization)}}</div>
+                                        </div>
+                                    </h2>
             </div>
             <div class="actions">
                 <div class="ui ok button">确认</div>
@@ -180,7 +180,7 @@ export default {
                 key: 'org',
                 format: value => {
                     if (value) {
-                        for (var i = 0; i < this.orgnizations.length; i++) {
+                        for (let i = 0; i < this.orgnizations.length; i++) {
                             if (this.orgnizations[i]._id == value) {
                                 return this.orgnizations[i].name;
                             }
@@ -204,16 +204,6 @@ export default {
         },
         formatName(data) {
             return data ? (data.firstName + ' ' + data.lastName).trim() : '';
-        },
-        formatOrgnization(data) {
-            if (data) {
-                for (var i = 0; i < this.orgnizations.length; i++) {
-                    if (this.orgnizations[i]._id == data) {
-                        return this.orgnizations[i].name;
-                    }
-                }
-            }
-            return '';
         }
     },
     computed: {
@@ -225,7 +215,7 @@ export default {
     },
     methods: {
         ...mapActions('users', ['list', 'paginate']),
-        ...mapActions('orgnizations', {'listOrgs': 'list'}),
+        ...mapActions('orgnizations', { 'listOrgs': 'list' }),
         reset() {
             this.name = null;
             this.email = null;
@@ -353,7 +343,17 @@ export default {
                     this.reset();
                 }
             }).modal('show');
-        }
+        },
+        getOrgnization(data) {
+            if (data) {
+                for (let i = 0; i < this.orgnizations.length; i++) {
+                    if (this.orgnizations[i]._id == data) {
+                        return this.orgnizations[i].name;
+                    }
+                }
+            }
+            return '';
+        },
     },
     created() {
         this.listOrgs();

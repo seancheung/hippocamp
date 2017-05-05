@@ -1,5 +1,5 @@
 <template>
-    <div class="ui container">
+    <div v-if="profile" class="ui container">
         <h3 class="ui top attached header">{{profile.name}}, 你好!</h3>
         <div class="ui attached piled segment">
             <dl>
