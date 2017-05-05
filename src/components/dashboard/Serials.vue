@@ -10,10 +10,40 @@
             <div class="thirteen wide stretched column">
                 <transition name="fade">
                     <div v-if="mode == 'qrcode'" class="ui container" key="qrcode">
-                        二维码
+                        <div class="ui secondary menu">
+                            <div class="item">
+                            </div>
+                            <div class="right item">
+                                <div class="ui small icon buttons">
+                                    <button class="ui new positive icon button" :class="{disabled: busy}" @click="create">
+                                        <i class="add icon"></i>
+                                    </button>
+                                    <button class="ui icon button" :class="{disabled: busy}" @click="list">
+                                        <i class="refresh icon"></i>
+                                    </button>
+                                    <button class="ui purple icon button" :class="{disabled: busy}" @click="download">
+                                        <i class="download icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui container">
+                            <qrcode v-for="item in items" :key="item._id" :text="item.sno" :label="item.sno" :size="140" :tooltip="getOrgnization(item.org)" :fontcolor="item.device? '#f44265':'#4286f4'"></qrcode>
+                        </div>
+                        <div class="ui center aligned basic segment" v-if="pages > 1">
+                            <div class="ui borderless pagination menu">
+                                <a class="icon item" :class="{disabled: page <= 1}" @click="paginate({page: page - 1, limit})">
+                                    <i class="left chevron icon"></i>
+                                </a>
+                                <a v-for="p in pages" class="item" :class="{active: p == page}" @click="paginate({page: p, limit})">{{p}}</a>
+                                <a class="icon item" :class="{disabled: page >= pages}" @click="paginate({page: page + 1, limit})">
+                                    <i class="right chevron icon"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                     <div v-else class="ui container" key="list">
-                        <crud-table :fields="fields" :index="'name'" @add="create" @refresh="list()" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :pagination="pagination" @paginate="paginate"></crud-table>
+                        <crud-table :fields="fields" :index="'sno'" @add="create" @refresh="list" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :page="page" :pages="pages" :limit="limit" @paginate="paginate"></crud-table>
                     </div>
                 </transition>
             </div>
@@ -46,18 +76,19 @@
 
 <script>
 import JSZip from 'jszip';
-import saveAs from 'file-saver';
-import kjua from 'kjua';
+import {saveAs} from 'file-saver';
 import moment from 'moment';
 import {
     mapGetters,
     mapActions
 } from 'vuex';
 import CrudTable from '../shared/CrudTable';
+import Qrcode from '../shared/Qrcode';
 
 export default {
     components: {
-        'crud-table': CrudTable
+        'crud-table': CrudTable,
+        'qrcode': Qrcode,
     },
     data() {
         return {
@@ -99,27 +130,15 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('serials', ['items', 'busy', 'error', 'pagination', 'count']),
-        ...mapGetters('orgnizations', { orgnizations: 'items' }),
+        ...mapGetters('serials', ['items', 'busy', 'error', 'pages', 'page', 'limit']),
+        ...mapGetters('orgnizations', { orgnizations: 'all' }),
         isValid() {
             return this.amount > 0 && this.orgnization;
         }
     },
     methods: {
         ...mapActions('serials', ['list', 'paginate']),
-        createImage(serial) {
-            const el = kjua({
-                mode: 'label',
-                text: serial.sno,
-                label: serial.sno,
-                size: 200,
-                mSize: 10,
-                fontcolor: serial.device ? '#f44141' : '#4286f4',
-                ecLevel: 'H',
-                quiet: 1
-            });
-            $('#qrcode').append(el);
-        },
+        ...mapActions('orgnizations', { 'listOrgs': 'list' }),
         reset() {
             this.amount = 10;
             this.orgnization = null;
@@ -129,9 +148,9 @@ export default {
                 detachable: false,
                 onApprove: () => {
                     this.$store.dispatch('orgnizations/list', true).then(() => {
-                        this.$store.dispatch('serials/create', {
-                            amount: this.amount,
-                            orgnization: this.orgnization
+                        this.$store.dispatch('serials/bulk', {
+                            count: this.amount,
+                            org: this.orgnization
                         })
                             .finally(() => {
                                 if (!this.error) {
@@ -156,9 +175,39 @@ export default {
         },
         show(item) {
 
+        },
+        getOrgnization(data) {
+            if (data) {
+                for (var i = 0; i < this.orgnizations.length; i++) {
+                    if (this.orgnizations[i]._id == data) {
+                        return this.orgnizations[i].name;
+                    }
+                }
+            }
+            return '';
+        },
+        download() {
+            const trim = src => {
+                let index = src.indexOf(",");
+                if (index !== -1) {
+                    return src.substring(index + 1, src.length);
+                }
+                return src;
+            };
+            const zip = new JSZip();
+            const folder = zip.folder('qrcodes');
+            for (let i = 0; i < this.$children.length; i++) {
+                let image = this.$children[i].$el.children[0];
+                folder.file(image.getAttribute('name') + '.jpg', trim(image.getAttribute('src')), { base64: true });
+            }
+            zip.generateAsync({ type: 'blob' })
+                .then(content => {
+                    saveAs(content, 'serials.zip');
+                });
         }
     },
     created() {
+        this.listOrgs();
         this.list();
     }
 }

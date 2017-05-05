@@ -1,6 +1,6 @@
 <template>
-    <table class="ui very basic celled striped table">
-        <thead class="full-width">
+    <table class="ui compact padded very basic celled striped table">
+        <thead>
             <tr class="borderless">
                 <th :colspan="fields.length + 1">
                     <div class="ui search" v-if="index">
@@ -10,7 +10,7 @@
                     </div>
                 </th>
                 <th>
-                    <div class="ui two small icon buttons">
+                    <div class="ui small icon buttons">
                         <button class="ui new positive icon button" :class="{disabled}" @click="add">
                             <i class="add icon"></i>
                         </button>
@@ -30,18 +30,18 @@
         <transition-group name="fade" tag="tbody">
             <tr v-for="(item, index) in filteredItems" :key="index">
                 <td>
-                    {{index + 1}}
+                    {{index + 1 + (page - 1) * limit}}
                 </td>
                 <td v-for="field in fields">
                     <a v-if="field.primary" @click.prevent="show(item)">
-                            {{field.format? field.format(item[field.key]): item[field.key]}}
-                    </a>
+                                {{field.format? field.format(item[field.key]): item[field.key]}}
+                        </a>
                     <span v-else>
-                            {{field.format? field.format(item[field.key]): item[field.key]}}
-                    </span>
+                                {{field.format? field.format(item[field.key]): item[field.key]}}
+                        </span>
                 </td>
                 <td>
-                    <div class="ui two small icon buttons">
+                    <div class="ui small icon buttons">
                         <button class="ui edit button" :class="{disabled}" @click="edit(item)"><i class="edit icon"></i></button>
                         <button class="ui negative delete button" :class="{disabled}" @click="remove(item)"><i class="delete icon"></i></button>
                     </div>
@@ -49,16 +49,16 @@
             </tr>
         </transition-group>
         <!--</tbody>-->
-        <tfoot class="full-width" v-if="filteredItems.length > 0">
+        <tfoot v-if="filteredItems.length > 0">
             <tr>
-                <th colspan="7">
-                    <div class="ui center aligned container" v-if="pagination.total > 1">
+                <th :colspan="fields.length + 2">
+                    <div class="ui center aligned basic segment" v-if="pages > 1">
                         <div class="ui borderless pagination menu">
-                            <a class="icon item" :class="{disabled: pagination.current <= 1}" @click="paginate(pagination.current - 1)">
+                            <a class="icon item" :class="{disabled: page <= 1}" @click="paginate(page - 1, limit)">
                                 <i class="left chevron icon"></i>
                             </a>
-                            <a v-for="p in pagination.total" class="item" :class="{active: p == pagination.current}" @click="paginate(p)">{{p}}</a>
-                            <a class="icon item" :class="{disabled: pagination.current >= pagination.total}" @click="paginate(pagination.current + 1)">
+                            <a v-for="p in pages" class="item" :class="{active: p == page}" @click="paginate(p, limit)">{{p}}</a>
+                            <a class="icon item" :class="{disabled: page >= pages}" @click="paginate(page + 1, limit)">
                                 <i class="right chevron icon"></i>
                             </a>
                         </div>
@@ -82,13 +82,25 @@ export default {
         fields: Array,
         disabled: Boolean,
         items: Array,
-        pagination: Object,
-        index: String
+        index: String,
+        page: Number,
+        limit: Number,
+        pages: Number
     },
     computed: {
         filteredItems() {
             if (!this.search || !this.index) {
                 return this.items;
+            }
+            if (Array.isArray(this.index)) {
+                return this.items.filter(i => {
+                    for (var n = 0; n < this.index.length; n++) {
+                        if (i[this.index[n]].includes(this.search)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
             }
             return this.items.filter(i => i[this.index].includes(this.search));
         }
@@ -109,8 +121,8 @@ export default {
         remove(item) {
             this.$emit('remove', item);
         },
-        paginate(page) {
-            this.$emit('paginate', page);
+        paginate(page, limit) {
+            this.$emit('paginate', { page, limit });
         },
     }
 }

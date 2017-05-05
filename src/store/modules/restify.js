@@ -18,6 +18,7 @@ export default class Restify {
         this.actions = this.mountActions;
         this.mutations = this.mountMutations;
         this.url = url;
+        this.types = types;
     }
 
     get mountState() {
@@ -25,63 +26,56 @@ export default class Restify {
             items: [],
             error: null,
             busy: false,
-            pagination: {
-                limit: 20,
-                current: 0,
-                total: 0,
-                count: 0
-            }
+            page: 1,
+            limit: 20
         };
     }
 
     get mountGetters() {
         return {
-            items: state => state.items,
+            all: state=> state.items,
+            items: state => {
+                const begin = state.limit * (state.page - 1);
+                return state.items.slice(begin, begin + state.limit);
+            },
+            page: state => state.page,
+            limit: state => state.limit,
+            pages: state => Math.ceil(state.items.length / state.limit),
             count: state => state.items.length,
-            pagination: state => state.pagination,
             error: state => state.error,
             busy: state => state.busy,
-            url: state => this.url
+            url: state => this.url,
+            types: state => this.types
         };
     }
 
     get mountActions() {
         return {
-            list({commit, getters}, pagination) {
-                commit(types.BEGIN_REQUEST, true);
-                if(pagination) {
-                    return Vue.http.get(getters.url + '?s=' + getters.pagination.limit + '&p=' + getters.pagination.current)
-                        .then(res => {
-                            commit(types.LIST_ITEMS, {items: res.body.docs, pagination: res.body.pagination});
-                        })
-                        .catch(res => {
-                            commit(types.LIST_ITEMS, {err: res.body.message});
-                        });
-                } else {
-                    return Vue.http.get(getters.url)
+            list({commit, getters}) {
+                commit(types.BEGIN_REQUEST);
+                return Vue.http.get(getters.url)
                         .then(res => {
                             commit(types.LIST_ITEMS, {items: res.body});
                         })
                         .catch(res => {
                             commit(types.LIST_ITEMS, {err: res.body.message});
                         });
-                }
             },
-            create({commit, getters}, data) {
+            create({commit, getters, dispatch}, data) {
                 commit(types.BEGIN_REQUEST);
                 return Vue.http.post(getters.url, data)
                     .then(res => {
-                        commit(types.CREATE_ITEM, {item: res.body});
+                        return dispatch('list');
                     })
                     .catch(res => {
                         commit(types.CREATE_ITEM, {err: res.body.message});
                     });
             },
-            update({commit, getters}, {id, data}) {
+            update({commit, getters, dispatch}, {id, data}) {
                 commit(types.BEGIN_REQUEST);
                 return Vue.http.put(getters.url + '/' + id, data)
                     .then(res => {
-                        commit(types.UPDATE_ITEM, {item: res.body});
+                        return dispatch('list');
                     })
                     .catch(res => {
                         commit(types.UPDATE_ITEM, {err: res.body.message});
@@ -97,66 +91,46 @@ export default class Restify {
                         commit(types.READ_ITEM, {err: res.body.message});
                     });
             },
-            delete({commit, getters}, id) {
+            delete({commit, getters, dispatch}, id) {
                 commit(types.BEGIN_REQUEST);
                 return Vue.http.delete(getters.url + '/' + id)
                     .then(res => {
-                        commit(types.DELETE_ITEM, {id});
+                        return dispatch('list');
                     })
                     .catch(res => {
                         commit(types.DELETE_ITEM, {err: res.body.message});
                     });
             },
-            paginate({commit, dispatch}, index) {
-                commit(types.PAGINATE_ITEMS, index);
-                return dispatch('list', true);
+            paginate({commit}, {page, limit}) {
+                commit(types.PAGINATE_ITEMS, {page, limit});
             }
         };
     }
 
     get mountMutations() {
         return {
-            [types.LIST_ITEMS](state, {items, pagination, err}) {
-                if(!err) {
-                    state.pagination = pagination || {limit: 20, current: 0, total: 0, count: 0};
-                }
+            [types.LIST_ITEMS](state, {items, err}) {
                 state.items = items || [];
                 state.error = err;
                 state.busy = false;
             },
 
             [types.CREATE_ITEM](state, {item, err}) {
-                if(!err) {
-                    state.items.push(item);
-                }
                 state.error = err;
                 state.busy = false;
             },
 
             [types.UPDATE_ITEM](state, {item, err}) {
-                if(!err) {
-                    const index = state.items.findIndex(i =>i._id == item._id);
-                    if(index >= 0) {
-                        Vue.set(state.items, index, item);
-                    }
-                }
                 state.error = err;
                 state.busy = false;
             },
 
             [types.READ_ITEM](state, {item, err}) {
-                state.selected = item;
                 state.error = err;
                 state.busy = false;
             },
 
             [types.DELETE_ITEM](state, {id, err}) {
-                if(!err) {
-                    const index = state.items.findIndex(i =>i._id == id);
-                    if(index >= 0) {
-                        state.items.splice(index, 1);
-                    }
-                }
                 state.error = err;
                 state.busy = false;
             },
@@ -169,8 +143,9 @@ export default class Restify {
                 state.busy = true;
             },
 
-            [types.PAGINATE_ITEMS](state, index) {
-                state.pagination.current = Math.max(0, Math.min(index, state.pagination.total));
+            [types.PAGINATE_ITEMS](state, {page, limit}) {
+                state.page = Math.max(1, Math.min(Math.ceil(state.items.length / state.limit), page));
+                state.limit = Math.max(10, limit);
             }
         };
     }

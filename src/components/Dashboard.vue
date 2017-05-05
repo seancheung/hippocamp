@@ -27,12 +27,12 @@
         <transition name="fade">
             <router-view></router-view>
         </transition>
-        <div class="ui inline cookie nag">
+        <!--<div class="ui inline cookie nag">
             <span class="title">
                     我们使用Cookie以确保您获得最好的体验
                   </span>
             <i class="close icon"></i>
-        </div>
+        </div>-->
     </div>
 </template>
 

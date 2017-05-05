@@ -1,6 +1,6 @@
 <template>
     <div class="ui contianer">
-        <crud-table :fields="fields" :index="'name'" @add="create" @refresh="list(true)" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :pagination="pagination" @paginate="paginate"></crud-table>
+        <crud-table :fields="fields" :index="'name'" @add="create" @refresh="list" :disabled="busy" :items="items" @show="show" @edit="edit" @remove="remove" :page="page" :pages="pages" :limit="limit" @paginate="paginate"></crud-table>
         <div class="ui small new user modal">
             <div class="header">新建用户</div>
             <div class="ui form content" :class="{error}">
@@ -217,14 +217,15 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('users', ['items', 'busy', 'error', 'pagination']),
-        ...mapGetters('orgnizations', { orgnizations: 'items' }),
+        ...mapGetters('users', ['items', 'busy', 'error', 'pages', 'page', 'limit']),
+        ...mapGetters('orgnizations', { orgnizations: 'all' }),
         isValid() {
             return this.name && this.email && this.password && this.confirm == this.password && this.role;
         }
     },
     methods: {
         ...mapActions('users', ['list', 'paginate']),
+        ...mapActions('orgnizations', {'listOrgs': 'list'}),
         reset() {
             this.name = null;
             this.email = null;
@@ -258,7 +259,7 @@ export default {
                     if (this.orgnization) {
                         data.org = this.orgnization;
                     }
-                    this.$store.dispatch('orgnizations/list', true).then(() => {
+                    this.$store.dispatch('orgnizations/list').then(() => {
                         this.$store.dispatch('users/create', data)
                             .finally(() => {
                                 if (!this.error) {
@@ -355,7 +356,8 @@ export default {
         }
     },
     created() {
-        this.list(true);
+        this.listOrgs();
+        this.list();
     }
 }
 </script>
