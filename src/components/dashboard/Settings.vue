@@ -1,5 +1,5 @@
 <template>
-    <h1>{{ $route.name }}</h1>
+    <h1>建设中</h1>
 </template>
 
 <script>

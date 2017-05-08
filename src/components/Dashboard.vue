@@ -27,12 +27,6 @@
         <transition name="fade">
             <router-view></router-view>
         </transition>
-        <!--<div class="ui inline cookie nag">
-            <span class="title">
-                    我们使用Cookie以确保您获得最好的体验
-                  </span>
-            <i class="close icon"></i>
-        </div>-->
     </div>
 </template>
 
@@ -42,14 +36,6 @@
 import { mapGetters, mapActions } from 'vuex';
 export default {
     name: 'Dashboard',
-    // mounted() {
-    //     $.cookie = this.$cookie.get;
-    //     $('.cookie.nag')
-    //         .nag({
-    //             key: 'accepts-cookies',
-    //             value: true
-    //         });
-    // },
     computed: {
         isAdmin() {
             return this.$store.getters.profile && /^(Super)?Admin$/.test(this.$store.getters.profile.role)
@@ -77,9 +63,6 @@ export default {
 <style scoped>
 .main.container {
     margin-top: 30px;
-}
-
-.cookie.nag {
-    margin-top: 30px;
+    height: 80%;
 }
 </style>

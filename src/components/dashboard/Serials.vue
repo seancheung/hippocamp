@@ -125,7 +125,7 @@ export default {
                 key: 'sno'
             },
             {
-                width: 'two',
+                width: 'three',
                 name: '组织',
                 key: 'org',
                 format: value => {
@@ -140,9 +140,10 @@ export default {
                 }
             },
             {
-                width: 'four',
+                width: 'three',
                 name: '设备',
-                key: 'device'
+                key: 'device',
+                format: value => value? `${value.uuid}(${moment(value.date).format('L')})` : ''
             },
             {
                 width: 'two',
@@ -154,7 +155,7 @@ export default {
     },
     computed: {
         ...mapGetters('serials', ['items', 'busy', 'error', 'pages', 'page', 'limit']),
-        ...mapGetters('orgnizations', { orgnizations: 'all' }),
+        ...mapGetters('orgnizations', { 'orgnizations': 'all' }),
         isValid() {
             return this.amount > 0 && this.orgnization;
         }
