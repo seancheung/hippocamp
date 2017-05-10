@@ -9,6 +9,7 @@ const types = {
     REMOVE_ENTRY: 'REMOVE_ENTRY',
     MOVE_ENTRY: 'MOVE_ENTRY',
     RENAME_ENTRY: 'RENAME_ENTRY',
+    UPLOAD_ENTRY: 'UPLOAD_ENTRY',
 };
 
 const state = {
@@ -70,16 +71,11 @@ const actions = {
     },
     remove({commit, getters}, entry) {
         commit(types.BEGIN_REQUEST);
-        const body = {};
+        const body = {dest: getters.entry.path};
         if(entry) {
-            body.path = entry.path;
+            body.entry = entry.path;
         } else {
-            for (var i = 0; i < getters.entry.contents.length; i++) {
-                const en = getters.entry.contents[i];
-                if(en.checked) {
-                    body[i] = en.path;
-                }                
-            }
+            body.entry = getters.entry.contents.filter(e => e.checked).map(e => e.path);
         }
         return Vue.http.delete('/api/v1/storage', {body})
             .then(res => {
@@ -87,6 +83,24 @@ const actions = {
             })
             .catch(res => {
                 commit(types.REMOVE_ENTRY, {err: res.body.message});
+            });
+    },
+    upload({commit, getters}, {files, decomp}) {
+        if(!files || !files.length) {
+            return;
+        }
+        commit(types.BEGIN_REQUEST);
+        const form = new FormData();
+        for (var i = 0; i < files.length; i++) {
+            form.append('entry', files[i]);
+        }
+        form.append('dest', getters.entry.path);
+        return Vue.http.post(`/api/v1/storage/${decomp?'zip':''}`, form, { 'Content-Type': 'multipart/form-data' })
+            .then(res => {
+                commit(types.UPLOAD_ENTRY, {entry: res.body});
+            })
+            .catch(res => {
+                commit(types.UPLOAD_ENTRY, {err: res.body.message});
             });
     }
 }
@@ -132,6 +146,11 @@ const mutations = {
         state.busy = false;
     },
     [types.RENAME_ENTRY](state, {err, entry}) {
+        state.entry = entry;
+        state.error = err;
+        state.busy = false;
+    },
+    [types.UPLOAD_ENTRY](state, {err, entry}) {
         state.entry = entry;
         state.error = err;
         state.busy = false;

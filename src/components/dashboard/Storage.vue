@@ -4,7 +4,9 @@
             <thead>
                 <tr>
                     <th colspan="6">
-                        <button class="ui small labeled icon button"><i class="cloud upload icon"></i>上传</button>
+                        <input type="file" id="upload" v-show="false" @change="upload({files: $event.target.files, decomp})">
+                        <button class="ui small labeled icon button" @click="pick(false)"><i class="upload icon"></i>上传</button>
+                        <button class="ui small labeled icon button" @click="pick(true)"><i class="cloud upload icon"></i>解压</button>
                         <button class="ui small labeled icon button" @click="visible = true; name = null;"><i class="folder icon"></i>新建</button>
                     </th>
                 </tr>
@@ -20,11 +22,11 @@
                 </tr>
                 <tr>
                     <th class="two wide"></th>
-                    <th class="four wide">名称</th>
+                    <th class="three wide">名称</th>
                     <th class="three wide">类型</th>
                     <th class="two wide">大小</th>
                     <th class="three wide">创建于</th>
-                    <th class="two wide"></th>
+                    <th class="three wide"></th>
                 </tr>
             </thead>
             <transition-group v-if="entry.contents" name="fade" tag="tbody">
@@ -55,7 +57,7 @@
                     </td>
                     <td>
                         <div class="ui mini action input">
-                            <input type="text" placeholder="新建文件夹" v-model="name">
+                            <input id="cf" type="text" placeholder="新建文件夹" v-model="name">
                             <button class="ui icon button" :class="{disabled:busy||!name}" @click="create({name}); visible = false; name = null;"><i class="checkmark icon"></i></button>
                             <button class="ui icon button" @click="name = null; visible = false;"><i class="remove icon"></i></button>
                         </div>
@@ -84,7 +86,7 @@
                         <a v-else @click.prevent="select(content.path)">{{content.name}}</a>
                     </td>
                     <td>{{content.mime}}</td>
-                    <td>{{content.size | toKB}}</td>
+                    <td>{{content.size | toSize}}</td>
                     <td>{{content.time | toDate}}</td>
                     <td>
                         <div class="actions">
@@ -108,7 +110,8 @@ export default {
         return {
             visible: false,
             name: null,
-            item: null
+            item: null,
+            decomp: false
         }
     },
     computed: {
@@ -121,7 +124,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('storage', ['select', 'check', 'create', 'remove', 'rename', 'move']),
+        ...mapActions('storage', ['select', 'check', 'create', 'remove', 'rename', 'move', 'upload']),
         toIcon(mime) {
             if(!mime) {
                 return 'folder icon';
@@ -142,6 +145,7 @@ export default {
                 case 'audio/mp3':
                 case 'audio/wav':
                 case 'audio/ogg':
+                case 'audio/mpeg':
                     return 'file audio outline icon';
                 case 'video/mp4':
                 case 'video/avi':
@@ -151,11 +155,18 @@ export default {
                 default:
                     return 'file outline icon';
             }
+        },
+        pick(decomp) {
+            this.decomp = decomp;
+            $('#upload').click();
         }
     },
     filters:{
-        toKB(bytes) {
-            return bytes === undefined ? '-': `${Math.floor(bytes / 1024)}KB`;
+        toSize(bytes) {
+            if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) return '-';
+            const units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'],
+                number = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, Math.floor(number))).toFixed(1) +  ' ' + units[number];
         },
         toDate(time) {
             return moment(time).format('DD/MM/YY hh:mm');
