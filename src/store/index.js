@@ -6,8 +6,7 @@ import * as getters from './getters';
 import account from './modules/account';
 import users from './modules/users';
 import serials from './modules/serials';
-import buckets from './modules/buckets';
-import resources from './modules/resources';
+import storage from './modules/storage';
 import orgnizations from './modules/orgnizations';
 
 Vue.use(Vuex);
@@ -21,8 +20,7 @@ export default new Vuex.Store({
         account,
         users,
         serials,
-        buckets,
-        resources,
+        storage,
         orgnizations
     },
     strict: debug,
