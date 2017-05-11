@@ -7,10 +7,10 @@
 </template>
 
 <script>
-    import 'semantic-ui-css/semantic.js';
-    export default {
-        
-    }
+import 'semantic-ui-css/semantic.js';
+export default {
+    
+}
 </script>
 
 <style>

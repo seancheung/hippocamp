@@ -7,10 +7,22 @@
                         <input type="file" id="pick-files" v-show="false" multiple @change="upload({files: $event.target.files})">
                         <input type="file" id="pick-archives" v-show="false" multiple  @change="upload({files: $event.target.files, archive: true})" accept=".zip">
                         <input type="file" id="pick-dir" v-show="false" @change="uploadDir($event.target.files)" webkitdirectory directory multiple>
-                        <button class="ui small labeled icon button" @click="pickFiles"><i class="upload icon"></i>文件</button>
-                        <button class="ui small labeled icon button" @click="pickArchives"><i class="cloud upload icon"></i>ZIP</button>
-                        <button class="ui small labeled icon button" @click="pickDir"><i class="folder icon"></i>目录</button>
-                        <button class="ui small labeled icon button" @click="visible = true; name = null;"><i class="add icon"></i>新建</button>                        
+                        <div class="ui small floating labeled icon dropdown button" :class="{disabled:busy}">
+                            <i class="cloud upload icon"></i>
+                            <span>上传</span>
+                            <div class="menu">
+                                <a class="item" @click="pickFiles"><i class="small file icon"></i>文件</a>
+                                <a class="item" @click="pickDir"><i class="small folder icon"></i>文件夹</a>
+                                <a class="item" @click="pickArchives"><i class="small archive icon"></i>压缩包</a>
+                            </div>
+                        </div>
+                        <div class="ui small floating labeled icon dropdown button" :class="{disabled:busy}">
+                            <i class="add icon"></i>
+                            <span>新建</span>
+                            <div class="menu">
+                                <a class="item" @click="insert"><i class="small folder icon"></i>文件夹</a>
+                            </div>
+                        </div>                       
                     </th>
                 </tr>
                 <tr class="message box">
@@ -21,27 +33,38 @@
                                 提示
                             </div>
                             <ul class="list">
-                                <li>可同时上传多个文件</li>
-                                <li>ZIP: 上传zip文件并解压到当前路径</li>
-                                <li>目录: 选取目录并进行上传</li>
-                                <li>拖拽文件到文件列表可进行上传</li>
+                                <li>支持文件夹上传</li>
+                                <li>支持多文件同时上传</li>
+                                <li>支持拖拽文件进行上传</li>
+                                <li>支持上传zip文件并解压到当前路径</li>
                             </ul>
+                        </div>
+                    </th>
+                </tr>
+                <tr v-show="error" class="message box">
+                    <th colspan="6">
+                        <div class="ui small error message">
+                            <i class="close icon" @click="dismiss"></i>
+                            <div class="header">
+                                错误
+                            </div>
+                            <p>{{ error }}</p>
                         </div>
                     </th>
                 </tr>
                 <tr>
                     <th v-if="!isRoot">
-                        <a class="ui small basic label" @click.prevent="select('/')"><i class="ellipsis horizontal icon"></i>根目录</a> 
+                        <a class="ui small basic label" @click="select('/')"><i class="ellipsis horizontal icon"></i>根目录</a> 
                     </th>
                     <th v-else>
-                        <a class="ui small basic label" @click.prevent="select('/')"><i class="refresh icon"></i>全部文件</a>                         
+                        <a class="ui small basic label" @click="select('/')"><i class="refresh icon"></i>全部文件</a>                         
                     </th>
                     <th colspan="5">
                         <span v-if="!isRoot">{{entry.path}}</span>
                     </th>
                 </tr>
                 <tr>
-                    <th class="two wide"><a class="ui small basic label" v-if="entry.path != '/'" @click.prevent="select(`${entry.path}/../`)"><i class="level up icon"></i>返回上级</a></th>
+                    <th class="two wide"><a class="ui small basic label" v-if="entry.path != '/'" @click="select(`${entry.path}/../`)"><i class="level up icon"></i>返回上级</a></th>
                     <th class="three wide">名称</th>
                     <th class="three wide">类型</th>
                     <th class="two wide">大小</th>
@@ -63,11 +86,11 @@
                     <td></td>
                     <td>
                         <div v-if="anyChecked">
-                            <a @click.prevent="remove()"><i class="large trash icon"></i></a>
+                            <a @click="remove()"><i class="large trash icon"></i></a>
                         </div>
                     </td>
                 </tr>
-                <tr v-if="visible" key="new-folder">
+                <tr v-if="inserting" key="new-folder">
                     <td>
                         <div class="ui checkbox">
                             <input type="checkbox">
@@ -78,8 +101,8 @@
                     <td>
                         <div class="ui mini action input">
                             <input id="cf" type="text" placeholder="新建文件夹" v-model="name">
-                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="create({name}); visible = false; name = null;"><i class="checkmark icon"></i></button>
-                            <button class="ui icon button" @click="name = null; visible = false;"><i class="remove icon"></i></button>
+                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="create({name}); reset();"><i class="checkmark icon"></i></button>
+                            <button class="ui icon button" :class="{disabled:busy}" @click="reset"><i class="remove icon"></i></button>
                         </div>
                     </td>
                     <td></td>
@@ -94,26 +117,26 @@
                             <label></label>
                         </div>
                         <i v-if="content.mime" class="large" :class="toIcon(content.mime)"></i>
-                        <a v-else @click.prevent="select(content.path)"><i class="large" :class="toIcon(content.mime)"></i></a>
+                        <a v-else @click="select(content.path)"><i class="large" :class="toIcon(content.mime)"></i></a>
                     </td>
                     <td>
-                        <div v-if="item === content" class="ui mini action input">
+                        <div v-if="editing === content" class="ui mini action input">
                             <input type="text" placeholder="名称" v-model="name">
-                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="rename({entry: content, name}); item = null; name = null;"><i class="checkmark icon"></i></button>
-                            <button class="ui icon button" @click="item = null; name = null;"><i class="remove icon"></i></button>
+                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="rename({entry: content, name}); reset();"><i class="checkmark icon"></i></button>
+                            <button class="ui icon button" :class="{disabled:busy}" @click="reset"><i class="remove icon"></i></button>
                         </div>
                         <span v-else-if="content.mime">{{content.name}}</span>
-                        <a v-else @click.prevent="select(content.path)">{{content.name}}</a>
+                        <a v-else @click="select(content.path)">{{content.name}}</a>
                     </td>
                     <td>{{content.mime}}</td>
                     <td>{{content.size | toSize}}</td>
                     <td>{{content.time | toDate}}</td>
                     <td>
                         <div class="actions">
-                            <a><i class="large cloud download icon"></i></a>
-                            <a><i class="large share alternate icon"></i></a>
-                            <a @click.prevent="item = content; name = content.name"><i class="large edit icon"></i></a>
-                            <a @click.prevent="remove(content)"><i class="large trash icon"></i></a>
+                            <a @click="download(content)"><i class="large cloud download icon"></i></a>
+                            <a @click="share(content)"><i class="large share alternate icon"></i></a>
+                            <a @click="edit(content)"><i class="large edit icon"></i></a>
+                            <a @click="remove(content)"><i class="large trash icon"></i></a>
                         </div>
                     </td>
                 </tr>
@@ -130,10 +153,10 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
     data() {
         return {
-            visible: false,
+            inserting: null,
             name: null,
-            item: null,
-            highlight: false
+            editing: null,
+            highlight: null
         }
     },
     computed: {
@@ -150,6 +173,27 @@ export default {
     },
     methods: {
         ...mapActions('storage', ['select', 'check', 'create', 'remove', 'rename', 'move', 'upload']),
+        reset() {
+            this.editing = null; 
+            this.name = null; 
+            this.inserting = null;
+        },
+        edit(item) {
+            this.editing = item; 
+            this.name = item.name; 
+            this.inserting = null;
+        },
+        insert() {
+            this.editing = null; 
+            this.name = null; 
+            this.inserting = true;
+        },
+        share(item) {
+
+        },
+        download(item) {
+
+        },
         dragenter(e) {
             this.highlight = true;
         },
@@ -157,10 +201,10 @@ export default {
             this.highlight = true;
         },
         dragleave(e) {
-            this.highlight = false;
+            this.highlight = null;
         },
         drop(e) {
-           this.highlight = false;
+           this.highlight = null;
            const files = [];
            if(e.dataTransfer.items) {
                for (let i = 0; i < e.dataTransfer.items.length; i++) {
@@ -279,11 +323,15 @@ export default {
             return (bytes / Math.pow(1024, Math.floor(number))).toFixed(1) +  ' ' + units[number];
         },
         toDate(time) {
-            return moment(time).format('DD/MM/YY hh:mm');
+            return moment(time).format('DD/MM/YY HH:mm');
         }
     },
     created() {
         this.select();        
+    },
+    updated() {
+        $('.ui.dropdown').not('.ready').addClass('ready').dropdown();
+        $('.action.input>input').focus().select();
     }
 }
 </script>
