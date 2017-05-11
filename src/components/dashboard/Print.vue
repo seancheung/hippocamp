@@ -22,7 +22,7 @@
                             </div>
                         </div>
                         <div class="ui container">
-                            <qrcode v-for="n in count" :key="n" :text="'CT'+(n+1000000).toString().substring(1)" :label="'CT'+(n+1000000).toString().substring(1)" :size="size"></qrcode>
+                            <qrcode v-for="n in (end - start + 1)" :key="n" :text="prefix+(n+1000000+start-1).toString().substring(1)" :label="prefix+(n+1000000+start-1).toString().substring(1)" :size="size"></qrcode>
                         </div>
                     </div>
                 </transition>
@@ -42,7 +42,9 @@ export default {
     data() {
         return {
             size: 128,
-            count: 72
+            start: 73,
+            end: 84,
+            prifix: 'CT'
         }
     },
     methods: {

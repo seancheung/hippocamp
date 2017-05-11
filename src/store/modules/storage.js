@@ -85,17 +85,17 @@ const actions = {
                 commit(types.REMOVE_ENTRY, {err: res.body.message});
             });
     },
-    upload({commit, getters}, {files, decomp}) {
+    upload({commit, getters}, {files, archive}) {
         if(!files || !files.length) {
             return;
         }
         commit(types.BEGIN_REQUEST);
         const form = new FormData();
         for (var i = 0; i < files.length; i++) {
-            form.append('entry', files[i]);
+            form.append('entry', files[i], files[i].name);
         }
         form.append('dest', getters.entry.path);
-        return Vue.http.post(`/api/v1/storage/${decomp?'zip':''}`, form, { 'Content-Type': 'multipart/form-data' })
+        return Vue.http.post(`/api/v1/storage/${archive?'zip':''}`, form)
             .then(res => {
                 commit(types.UPLOAD_ENTRY, {entry: res.body});
             })

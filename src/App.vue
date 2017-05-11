@@ -6,7 +6,16 @@
     </div>
 </template>
 
+<script>
+    import 'semantic-ui-css/semantic.js';
+    export default {
+        
+    }
+</script>
+
 <style>
+@import url('~semantic-ui-css/semantic.css');
+
 #app {
     font-family: Helvetica Neue,
     Helvetica,
@@ -23,7 +32,10 @@
 #app *:not(i) {
     font-family: inherit;
 }
+</style>
 
+<!--[if !IE]>
+<style>
 .fade-enter-active,
 .fade-leave-active {
     transition-property: opacity;
@@ -39,3 +51,5 @@
     opacity: 0
 }
 </style>
+<![endif]-->
+
