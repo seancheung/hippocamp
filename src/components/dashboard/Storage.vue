@@ -141,7 +141,7 @@
                     </td>
                     <td>
                         <div v-if="editing === content" class="ui mini action input">
-                            <input type="text" placeholder="名称" v-model="name">
+                            <input type="text" placeholder="名称" v-model="name" @blur="close">
                             <button class="ui icon button" :class="{disabled:busy||!name}" @click="rename({entry: content, name}).finally(reset)"><i class="checkmark icon"></i></button>
                             <button class="ui icon button" :class="{disabled:busy}" @click="reset"><i class="remove icon"></i></button>
                         </div>
@@ -216,8 +216,7 @@ export default {
             this.inserting = null;
         },
         close() {
-            this.editing = null; 
-            this.inserting = null;
+            setTimeout(this.reset, 500);
         },
         edit(item) {
             this.editing = item; 
