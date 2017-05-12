@@ -49,7 +49,7 @@ const actions = {
             });
     },
     download({commit, getters}, path) {
-        return Vue.http.get(`/api/v1/storage/dl!/${path}`, {
+        return Vue.http.get(`/api/v1/storage/_/${path}`, {
             responseType: 'arraybuffer',
             before(req) {
                 commit(types.BEGIN_REQUEST, {req});
@@ -72,8 +72,8 @@ const actions = {
     check({commit}, {index, checked}) {
         commit(types.CHECK_ENTRY, {index, checked});
     },
-    create({commit, getters}, {name, dest}) {
-        return Vue.http.post('/api/v1/storage/dir', {name, dest: dest || getters.path}, {before(req){commit(types.BEGIN_REQUEST, {req});}})
+    create({commit, getters}, name) {
+        return Vue.http.post('/api/v1/storage/dir', {name, dest: getters.path}, {before(req){commit(types.BEGIN_REQUEST, {req});}})
             .then(res => {
                 commit(types.CREATE_DIR, {entry: res.body});
             })

@@ -117,8 +117,8 @@
                     </td>
                     <td>
                         <div class="ui mini action input">
-                            <input id="cf" type="text" placeholder="新建文件夹" v-model="name" @blur="reset">
-                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="create({name}); reset();"><i class="checkmark icon"></i></button>
+                            <input id="cf" type="text" placeholder="新建文件夹" v-model="name" @blur="close">
+                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="create(name).finally(reset)"><i class="checkmark icon"></i></button>
                             <button class="ui icon button" :class="{disabled:busy}" @click="reset"><i class="remove icon"></i></button>
                         </div>
                     </td>
@@ -141,8 +141,8 @@
                     </td>
                     <td>
                         <div v-if="editing === content" class="ui mini action input">
-                            <input type="text" placeholder="名称" v-model="name" @blur="reset">
-                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="rename({entry: content, name}); reset();"><i class="checkmark icon"></i></button>
+                            <input type="text" placeholder="名称" v-model="name">
+                            <button class="ui icon button" :class="{disabled:busy||!name}" @click="rename({entry: content, name}).finally(reset)"><i class="checkmark icon"></i></button>
                             <button class="ui icon button" :class="{disabled:busy}" @click="reset"><i class="remove icon"></i></button>
                         </div>
                         <span v-else-if="content.mime">{{content.name}}</span>
@@ -213,6 +213,10 @@ export default {
         reset() {
             this.editing = null; 
             this.name = null; 
+            this.inserting = null;
+        },
+        close() {
+            this.editing = null; 
             this.inserting = null;
         },
         edit(item) {
