@@ -6,7 +6,16 @@
     </div>
 </template>
 
+<script>
+import 'semantic-ui-css/semantic.js';
+export default {
+    
+}
+</script>
+
 <style>
+@import url('~semantic-ui-css/semantic.css');
+
 #app {
     font-family: Helvetica Neue,
     Helvetica,
@@ -39,3 +48,4 @@
     opacity: 0
 }
 </style>
+

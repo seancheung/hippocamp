@@ -1,8 +1,6 @@
 import Vue from 'vue';
 import Resource from 'vue-resource';
 import Router from 'vue-router';
-import 'semantic-ui-css/semantic.css';
-import 'semantic-ui-css/semantic.js';
 
 Vue.use(Resource);
 Vue.use(Router);

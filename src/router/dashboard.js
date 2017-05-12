@@ -3,7 +3,7 @@ import Home from '../components/dashboard/Home';
 import Orgnizations from '../components/dashboard/Orgnizations';
 import Serials from '../components/dashboard/Serials';
 import Settings from '../components/dashboard/Settings';
-import Storages from '../components/dashboard/Storages';
+import Storage from '../components/dashboard/Storage';
 import Users from '../components/dashboard/Users';
 import store from '../store';
 
@@ -31,9 +31,9 @@ export default {
             component: Users
         },
         {
-            name: 'Storages',
-            path: '/storages',
-            component: Storages
+            name: 'Storage',
+            path: '/storage',
+            component: Storage
         },
         {
             name: 'Settings',
