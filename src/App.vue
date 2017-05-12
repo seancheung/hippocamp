@@ -32,10 +32,7 @@ export default {
 #app *:not(i) {
     font-family: inherit;
 }
-</style>
 
-<!--[if !IE]>
-<style>
 .fade-enter-active,
 .fade-leave-active {
     transition-property: opacity;
@@ -51,5 +48,4 @@ export default {
     opacity: 0
 }
 </style>
-<![endif]-->
 

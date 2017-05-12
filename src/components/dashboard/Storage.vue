@@ -1,18 +1,34 @@
 <template>
-    <div class="ui container">
+    <div class="ui basic segment">
+        <div class="ui inverted dimmer" :class="{active:pending}">
+            <div class="content">
+                <div class="center">
+                    <div v-if="progress" id="progress-bar" class="ui tiny progress">
+                        <div class="bar"></div>
+                    </div>
+                    <h1 v-else class="ui header">
+                        <i class="big icons">
+                            <i class="inverted grey big loading spinner icon"></i>
+                            <i class="inverted grey small cloud icon"></i>
+                        </i>
+                    </h1>
+                    <button class="ui small labeled icon button" @click="abort"><i class="cancel icon"></i>取消</button>
+                </div>
+            </div>
+        </div>
         <table v-if="entry" class="ui very basic selectable table" :class="{highlight}" @dragenter.stop.prevent="dragenter" @dragleave="dragleave" @drop.stop.prevent="drop" @dragover.stop.prevent="dragover">
             <thead>
                 <tr>
                     <th colspan="6">
-                        <input type="file" id="pick-files" v-show="false" multiple @change="upload({files: $event.target.files})">
-                        <input type="file" id="pick-archives" v-show="false" multiple  @change="upload({files: $event.target.files, archive: true})" accept=".zip">
-                        <input type="file" id="pick-dir" v-show="false" @change="uploadDir($event.target.files)" webkitdirectory directory multiple>
+                        <input type="file" id="pick-files" v-show="false" multiple @change="upload({files: $event.target.files}); $event.target.value = null;">
+                        <input type="file" id="pick-archives" v-show="false" multiple  @change="upload({files: $event.target.files, archive: true}); $event.target.value = null;" accept=".zip">
+                        <input type="file" id="pick-dir" v-show="false" @change="uploadDir($event.target.files); $event.target.value = null;" webkitdirectory directory multiple>
                         <div class="ui small floating labeled icon dropdown button" :class="{disabled:busy}">
                             <i class="cloud upload icon"></i>
                             <span>上传</span>
                             <div class="menu">
                                 <a class="item" @click="pickFiles"><i class="small file icon"></i>文件</a>
-                                <a class="item" @click="pickDir"><i class="small folder icon"></i>文件夹</a>
+                                <a v-if="supportDir" class="item" @click="pickDir"><i class="small folder icon"></i>文件夹</a>
                                 <a class="item" @click="pickArchives"><i class="small archive icon"></i>压缩包</a>
                             </div>
                         </div>
@@ -22,7 +38,7 @@
                             <div class="menu">
                                 <a class="item" @click="insert"><i class="small folder icon"></i>文件夹</a>
                             </div>
-                        </div>                       
+                        </div>
                     </th>
                 </tr>
                 <tr class="message box">
@@ -33,7 +49,8 @@
                                 提示
                             </div>
                             <ul class="list">
-                                <li>支持文件夹上传</li>
+                                <li v-if="supportDir">支持文件夹上传</li>
+                                <li v-else><strike>当前浏览器不支持文件夹上传</strike></li>
                                 <li>支持多文件同时上传</li>
                                 <li>支持拖拽文件进行上传</li>
                                 <li>支持上传zip文件并解压到当前路径</li>
@@ -100,7 +117,7 @@
                     </td>
                     <td>
                         <div class="ui mini action input">
-                            <input id="cf" type="text" placeholder="新建文件夹" v-model="name">
+                            <input id="cf" type="text" placeholder="新建文件夹" v-model="name" @blur="reset">
                             <button class="ui icon button" :class="{disabled:busy||!name}" @click="create({name}); reset();"><i class="checkmark icon"></i></button>
                             <button class="ui icon button" :class="{disabled:busy}" @click="reset"><i class="remove icon"></i></button>
                         </div>
@@ -116,12 +133,15 @@
                             <input type="checkbox" :checked="content.checked" @click="check({index, checked: $event.target.checked})">
                             <label></label>
                         </div>
-                        <i v-if="content.mime" class="large" :class="toIcon(content.mime)"></i>
-                        <a v-else @click="select(content.path)"><i class="large" :class="toIcon(content.mime)"></i></a>
+                        <i class="large icons">
+                            <i v-if="content.mime" :class="toIcon(content.mime)"></i>
+                            <a v-else @click="select(content.path)"><i :class="toIcon(content.mime)"></i></a>
+                            <i v-if="isShared(content)" class="corner grey share alternate icon"></i>
+                        </i>
                     </td>
                     <td>
                         <div v-if="editing === content" class="ui mini action input">
-                            <input type="text" placeholder="名称" v-model="name">
+                            <input type="text" placeholder="名称" v-model="name" @blur="reset">
                             <button class="ui icon button" :class="{disabled:busy||!name}" @click="rename({entry: content, name}); reset();"><i class="checkmark icon"></i></button>
                             <button class="ui icon button" :class="{disabled:busy}" @click="reset"><i class="remove icon"></i></button>
                         </div>
@@ -132,23 +152,34 @@
                     <td>{{content.size | toSize}}</td>
                     <td>{{content.time | toDate}}</td>
                     <td>
-                        <div class="actions">
-                            <a @click="download(content)"><i class="large cloud download icon"></i></a>
-                            <a @click="share(content)"><i class="large share alternate icon"></i></a>
-                            <a @click="edit(content)"><i class="large edit icon"></i></a>
-                            <a @click="remove(content)"><i class="large trash icon"></i></a>
+                        <div class="actions" :class="{disabled:busy}">
+                            <a @click="download(content)"><i class="large cloud download icon" :class="{disabled:busy}"></i></a>
+                            <a @click="edit(content)"><i class="large edit icon" :class="{disabled:busy}"></i></a>
+                            <a @click="remove(content)"><i class="large trash icon" :class="{disabled:busy}"></i></a>
+                            <div class="ui icon floating dropdown" v-if="isShared(content)">
+                                <i class="large horizontal ellipsis icon" :class="{disabled:busy}"></i>
+                                <div class="menu">
+                                    <div class="header">{{toSharing(content)}}</div>
+                                    <a class="copy item" :data-clipboard-text="`${host}/api/v1/storage/dl/${toSharing(content)}`"><i class="large copy icon"></i>复制分享链接</a>
+                                    <a class="item" @click="removeSharing(content.path)"><i class="large ban icon"></i>取消分享</a>
+                                </div>
+                            </div>
+                            <a v-else @click="createSharing({path: content.path})"><i class="large share alternate icon" :class="{disabled:busy}"></i></a>
                         </div>
                     </td>
                 </tr>
             </transition-group>
-        </table>
+        </table>        
     </div>
 </template>
 
 <script>
 import moment from 'moment';
 import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import Promise from 'bluebird';
+import Clipboard from 'clipboard';
+import toastr from 'toastr';
 import { mapGetters, mapActions } from 'vuex';
 export default {
     data() {
@@ -156,11 +187,14 @@ export default {
             inserting: null,
             name: null,
             editing: null,
-            highlight: null
+            highlight: null,
+            supportDir: false,
+            clipboard: null,
+            host: 'http://localhost'
         }
     },
     computed: {
-        ...mapGetters('storage', ['entry', 'busy', 'error']),
+        ...mapGetters('storage', ['entry', 'busy', 'error', 'progress', 'pending', 'sharings']),
         allChecked() {
             return this.entry && this.entry.contents && this.entry.contents.filter(e => e.checked).length == this.entry.contents.length;
         },
@@ -168,11 +202,14 @@ export default {
             return this.entry && this.entry.contents && this.entry.contents.filter(e => e.checked).length > 0;
         },
         isRoot() {
-            return this.entry.path === '/';
+            return this.entry && this.entry.path === '/';
+        },
+        isIE() {
+            return /msie|trident/i.test(window.navigator.userAgent);
         }
     },
     methods: {
-        ...mapActions('storage', ['select', 'check', 'create', 'remove', 'rename', 'move', 'upload']),
+        ...mapActions('storage', ['select', 'check', 'create', 'remove', 'rename', 'move', 'upload', 'abort', 'listSharings', 'createSharing', 'removeSharing']),
         reset() {
             this.editing = null; 
             this.name = null; 
@@ -188,11 +225,11 @@ export default {
             this.name = null; 
             this.inserting = true;
         },
-        share(item) {
-
-        },
         download(item) {
-
+            this.$store.dispatch('storage/download', item.path)
+                .then(res => {
+                    saveAs(new Blob([res.data], {type: res.headers.get('content-type')}), res.headers.get('content-disposition').match(/filename="([^"]+)"/)[1]);
+                });
         },
         dragenter(e) {
             this.highlight = true;
@@ -224,6 +261,12 @@ export default {
            if(files.length) {
                this.upload({files});
            }
+        },
+        isShared(item) {
+            return this.sharings && this.sharings.length && this.sharings.some(s => s.path == item.path);
+        },
+        toSharing(item) {
+            return this.sharings.find(s => s.path == item.path).hash;
         },
         toIcon(mime) {
             if(!mime) {
@@ -324,19 +367,56 @@ export default {
         },
         toDate(time) {
             return moment(time).format('DD/MM/YY HH:mm');
-        }
+        }        
     },
     created() {
-        this.select();        
+        this.select()
+            .then(() => {
+                this.listSharings();
+            });
     },
     updated() {
         $('.ui.dropdown').not('.ready').addClass('ready').dropdown();
-        $('.action.input>input').focus().select();
+        $('.action.input>input').not(':focus').select().focus();       
+    },
+    watch: {
+        progress(val) {
+            $('#progress-bar').progress({
+                percent: val
+            }); 
+        }
+    },
+    mounted() {
+        $('<input/>').each((i, el) => {
+            this.supportDir = 'webkitdirectory' in el 
+                || 'mozdirectory' in el 
+                || 'odirectory' in el 
+                || 'msdirectory' in el 
+                || 'directory' in el;
+        })
+        .remove();    
+        if (!this.clipboard) {
+            this.clipboard = new Clipboard('a.copy');
+            this.clipboard.on('success', e => {
+                toastr.clear();
+                toastr.success('复制分享链接到剪贴板成功');
+                e.clearSelection();
+            });
+        }
+        this.host = window.location.origin;
+    },
+    beforeDestroy() {
+        if (this.clipboard) {
+            this.clipboard.destroy();
+            this.clipboard = null;
+        }
     }
 }
 </script>
 
 <style scoped>
+@import url('~toastr/build/toastr.css');
+
 a {
     color: inherit;
 }
@@ -365,8 +445,19 @@ div.dropzone:hover {
     border: 2px dashed #dddddd;
     padding: 4px;
 }
-.ui.container {
+.ui.segment {
+    padding: 0;
     padding-bottom: 40px;
+    margin: 0;
+}
+.actions.disabled>a {
+    pointer-events: none;
+    cursor: default;
+}
+.dimmer .progress {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 </style>
 
