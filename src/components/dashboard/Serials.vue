@@ -125,7 +125,7 @@ export default {
                 key: 'sno'
             },
             {
-                width: 'three',
+                width: 'two',
                 name: '组织',
                 key: 'org',
                 format: value => {
@@ -140,10 +140,16 @@ export default {
                 }
             },
             {
-                width: 'three',
+                width: 'two',
                 name: '设备',
                 key: 'device',
-                format: value => value? `${value.uuid}(${moment(value.date).format('L')})` : ''
+                format: value => value? `${value.uuid}` : ''
+            },
+            {
+                width: 'two',
+                name: '注册日期',
+                key: 'device',
+                format: value => value? moment(value.createdAt).format('HH:mm MM/DD/YY'): ''
             },
             {
                 width: 'two',
