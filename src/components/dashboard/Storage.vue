@@ -209,7 +209,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('storage', ['select', 'check', 'create', 'remove', 'rename', 'move', 'upload', 'abort', 'listSharings', 'createSharing', 'removeSharing']),
+        ...mapActions('storage', ['select', 'check', 'create', 'remove', 'rename', 'move', 'upload', 'abort', 'createSharing', 'removeSharing']),
         reset() {
             this.editing = null; 
             this.name = null; 
@@ -376,10 +376,7 @@ export default {
         }        
     },
     created() {
-        this.select()
-            .then(() => {
-                this.listSharings();
-            });
+        this.select();
     },
     updated() {
         $('.ui.dropdown').not('.ready').addClass('ready').dropdown();

@@ -39,10 +39,11 @@ const getters = {
 };
 
 const actions = {
-    select({commit, getters}, path) {
+    select({commit, getters, dispatch}, path) {
         return Vue.http.get(`/api/v1/storage/!/${path || getters.path}`, {before(req){commit(types.BEGIN_REQUEST, {req});}})
             .then(res => {
                 commit(types.SELECT_ENTRY, {entry: res.body});
+                return dispatch('listSharings')
             })
             .catch(res => {
                 commit(types.SELECT_ENTRY, {err: res.body.message, status: res.status});
