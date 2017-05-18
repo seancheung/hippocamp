@@ -5,7 +5,7 @@ import Serials from '../components/dashboard/Serials';
 import Settings from '../components/dashboard/Settings';
 import Storage from '../components/dashboard/Storage';
 import Users from '../components/dashboard/Users';
-import store from '../store';
+import Vue from 'vue';
 
 export default {
     path: '/',
@@ -42,9 +42,12 @@ export default {
         }
     ],
     beforeEnter: function (to, from, next) {
-        if (store.getters.profile) {
+        if (Vue.store.getters.profile) {
             next();
         } else {
+            Vue.store.dispatch('redirect', {
+                name: to.name
+            });
             next({
                 name: 'Login'
             });

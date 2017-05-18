@@ -71,7 +71,7 @@ export default {
 
         tryRedirect() {
             if (this.profile) {
-                this.$router.push({ name: 'Dashboard' });
+                this.$router.push(this.$store.getters.route || { name: 'Dashboard' });
             }
         }
     },
