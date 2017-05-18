@@ -68,11 +68,7 @@ const actions = {
             commit(types.RECEIVE_PROFILE, {});
             const jwt = Vue.cookie.get('jwt');
             if (jwt) {
-                return Vue.http.get('/api/v1/account', {
-                        headers: {
-                            'Authorization': jwt
-                        }
-                    })
+                return Vue.http.get('/api/v1/account')
                     .then(res => {
                         commit(types.RECEIVE_PROFILE, {
                             jwt,
@@ -97,7 +93,6 @@ const mutations = {
         err,
         save
     }) {
-        Vue.http.headers.common['Authorization'] = jwt || '';
         state.error = err;
         state.profile = profile;
         if (save) {

@@ -51,14 +51,15 @@ export default class Restify {
 
     get mountActions() {
         return {
-            list({commit, getters}) {
+            list({commit, getters, dispatch}) {
                 commit(types.BEGIN_REQUEST);
                 return Vue.http.get(getters.url)
                         .then(res => {
                             commit(types.LIST_ITEMS, {items: res.body});
                         })
                         .catch(res => {
-                            commit(types.LIST_ITEMS, {err: res.body.message});
+                            dispatch('handle', res.status);
+                            commit(types.LIST_ITEMS, {err: res.body.message, status: res.status});
                         });
             },
             create({commit, getters, dispatch}, data) {
@@ -68,7 +69,8 @@ export default class Restify {
                         return dispatch('list');
                     })
                     .catch(res => {
-                        commit(types.CREATE_ITEM, {err: res.body.message});
+                        dispatch('handle', res.status);
+                        commit(types.CREATE_ITEM, {err: res.body.message, status: res.status});
                     });
             },
             update({commit, getters, dispatch}, {id, data}) {
@@ -78,17 +80,19 @@ export default class Restify {
                         return dispatch('list');
                     })
                     .catch(res => {
-                        commit(types.UPDATE_ITEM, {err: res.body.message});
+                        dispatch('handle', res.status);
+                        commit(types.UPDATE_ITEM, {err: res.body.message, status: res.status});
                     });
             },
-            read({commit, getters}, id) {
+            read({commit, getters, dispatch}, id) {
                 commit(types.BEGIN_REQUEST);
                 return Vue.http.get(getters.url + '/' + id)
                     .then(res => {
                         commit(types.READ_ITEM, {item: res.body});
                     })
                     .catch(res => {
-                        commit(types.READ_ITEM, {err: res.body.message});
+                        dispatch('handle', res.status);
+                        commit(types.READ_ITEM, {err: res.body.message, status: res.status});
                     });
             },
             delete({commit, getters, dispatch}, id) {
@@ -98,39 +102,50 @@ export default class Restify {
                         return dispatch('list');
                     })
                     .catch(res => {
-                        commit(types.DELETE_ITEM, {err: res.body.message});
+                        dispatch('handle', res.status);
+                        commit(types.DELETE_ITEM, {err: res.body.message, status: res.status});
                     });
             },
             paginate({commit}, {page, limit}) {
                 commit(types.PAGINATE_ITEMS, {page, limit});
+            },
+            handle({commit}, status) {
+                switch (status) {
+                    case 401:
+                        Vue.router.push({ name: 'Login' });
+                        break;
+                    case 403:
+                        Vue.router.push({ name: 'Dashboard' });
+                        break;
+                }
             }
         };
     }
 
     get mountMutations() {
         return {
-            [types.LIST_ITEMS](state, {items, err}) {
+            [types.LIST_ITEMS](state, {items, err, status}) {
                 state.items = items || [];
                 state.error = err;
                 state.busy = false;
             },
 
-            [types.CREATE_ITEM](state, {item, err}) {
+            [types.CREATE_ITEM](state, {item, err, status}) {
                 state.error = err;
                 state.busy = false;
             },
 
-            [types.UPDATE_ITEM](state, {item, err}) {
+            [types.UPDATE_ITEM](state, {item, err, status}) {
                 state.error = err;
                 state.busy = false;
             },
 
-            [types.READ_ITEM](state, {item, err}) {
+            [types.READ_ITEM](state, {item, err, status}) {
                 state.error = err;
                 state.busy = false;
             },
 
-            [types.DELETE_ITEM](state, {id, err}) {
+            [types.DELETE_ITEM](state, {id, err, status}) {
                 state.error = err;
                 state.busy = false;
             },
