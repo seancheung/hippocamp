@@ -3,10 +3,10 @@ import Vue from 'vue';
 import Resource from 'vue-resource';
 Vue.use(Resource);
 
-import Store from './store';
+import Store from './v2/store';
 Vue.use(Store);
 
-import router from './router';
+import router from './v2/router';
 import App from './App.vue';
 
 new Vue({

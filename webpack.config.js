@@ -51,7 +51,8 @@ module.exports = {
     host: 'localhost',
     port: '9000',
     proxy: {
-      '/api/v1': 'http://localhost:3000'
+      '/api/v1': 'http://localhost:3000',
+      '/api/v2': 'http://localhost:3000',
     }
   },
   performance: {
