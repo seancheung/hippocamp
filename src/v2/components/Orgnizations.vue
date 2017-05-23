@@ -3,7 +3,7 @@
         <table class="ui very basic selectable table">
             <thead>
                 <tr class="borderless">
-                    <th :colspan="3">
+                    <th :colspan="2">
                         <div class="ui search">
                             <div class="ui small icon input">
                                 <input type="text" placeholder="搜索...">
@@ -13,10 +13,10 @@
                     </th>
                     <th>
                         <div class="options">
-                            <router-link to="/orgs/add" :class="{disabled: pending}">
+                            <router-link v-if="isSuperAdmin" :to="{name: 'OrgnizationAdd'}" :class="{disabled: pending}" data-content="添加新组织">
                                 <i class="large add icon"></i>
                             </router-link>
-                            <a :class="{disabled: pending}" @click="list">
+                            <a :class="{disabled: pending}" @click="list" data-content="刷新列表">
                                 <i class="large refresh icon"></i>
                             </a>
                         </div>
@@ -25,7 +25,6 @@
                 <tr>
                     <th></th>
                     <th>名称</th>
-                    <th>描述</th>
                     <th></th>
                 </tr>
             </thead>
@@ -34,22 +33,25 @@
                     <td>
                         {{index + 1}}
                     </td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.desc }}</td>
                     <td>
-                        <div class="actions" :class="{disabled:pending}">
-                            <router-link :to="{name: 'Users', params: {id: item._id}}">
-                                <i class="large users icon"></i>
+                        <router-link :to="{name: 'Orgnization', params: {id: item._id}}">
+                            {{ item.name }}
+                        </router-link>
+                    </td>
+                    <td>
+                        <div class="actions options" :class="{disabled:pending}">
+                            <router-link :to="{name: 'Users', params: {id: item._id}}" data-content="管理此组织用户">
+                                <i class="large purple users icon"></i>
                             </router-link>
-                            <router-link :to="{name: 'Serials', params: {id: item._id}}">
-                                <i class="large qrcode icon"></i>
+                            <router-link :to="{name: 'Serials', params: {id: item._id}}" data-content="管理此组织序列号">
+                                <i class="large green qrcode icon"></i>
                             </router-link>
-                            <router-link :to="{name: 'OrgnizationEdit', params: {id: item._id}}">
-                                <i class="large edit icon"></i>
+                            <router-link :to="{name: 'OrgnizationEdit', params: {id: item._id}}" data-content="修改组织信息">
+                                <i class="large blue edit icon"></i>
                             </router-link>
-                            <router-link :to="{name: 'Orgnization', params: {id: item._id}}">
-                                <i class="large horizontal ellipsis icon"></i>
-                            </router-link>
+                            <a v-if="isSuperAdmin" data-content="删除此组织">
+                                <i class="large red trash icon"></i>
+                            </a>
                         </div>
                     </td>
                 </tr>
@@ -62,10 +64,18 @@
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
-    computed: mapGetters('orgnizations', ['items', 'item', 'pending', 'error']),
+    computed: {
+        ...mapGetters('orgnizations', ['items', 'pending', 'error']),
+        ...mapGetters(['isSuperAdmin'])
+    },
     methods: mapActions('orgnizations', ['list']),
     created() {
         this.list();
+    },
+    updated() {
+        $('.options>a').popup({
+            position: 'bottom center'
+        });
     }
 }
 </script>
@@ -78,6 +88,7 @@ export default {
 a {
     color: inherit;
 }
+
 a:hover {
     cursor: pointer;
 }
@@ -86,18 +97,42 @@ a:hover {
     border-left: 0;
 }
 
-.actions,
 .options {
     text-align: right;
 }
 
+.options>a {
+    display: inline-block;
+    -webkit-transition: all 200ms ease-in;
+    -webkit-transform: scale(1);
+    -ms-transition: all 200ms ease-in;
+    -ms-transform: scale(1);
+    -moz-transition: all 200ms ease-in;
+    -moz-transform: scale(1);
+    transition: all 200ms ease-in;
+    transform: scale(1);
+}
+
+.options>a:hover {
+    -webkit-transition: all 200ms ease-in;
+    -webkit-transform: scale(1.5);
+    -ms-transition: all 200ms ease-in;
+    -ms-transform: scale(1.5);
+    -moz-transition: all 200ms ease-in;
+    -moz-transform: scale(1.5);
+    transition: all 200ms ease-in;
+    transform: scale(1.5);
+}
+
 tr .actions {
-    visibility: hidden; 
+    visibility: hidden;
     padding-right: 32px;
 }
+
 tr:hover .actions {
     visibility: visible;
 }
+
 tr .actions.disabled>a {
     pointer-events: none;
     cursor: default;
@@ -106,6 +141,7 @@ tr .actions.disabled>a {
 table.basic.selectable.table tr>td {
     padding-left: 12px !important;
 }
+
 table.basic.selectable.table th span {
     padding-right: 12px;
 }

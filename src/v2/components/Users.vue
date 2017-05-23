@@ -1,9 +1,160 @@
 <template>
-  
+    <div class="ui contianer">
+        <div class="ui breadcrumb" v-if="item">
+            <router-link :to="{name: 'Orgnizations'}" class="section">Orgnizations</router-link>
+            <i class="right angle icon divider"></i>
+            <router-link :to="{name: 'Orgnization', params: { id: $route.params.id}}" class="section">{{item.name}}</router-link>
+            <i class="right angle icon divider"></i>
+            <div class="active section">Users</div>
+        </div>
+        <table class="ui very basic selectable table" v-if="items">
+            <thead>
+                <tr class="borderless">
+                    <th :colspan="4">
+                        <div class="ui search">
+                            <div class="ui small icon input">
+                                <input type="text" placeholder="搜索...">
+                                <i class="search icon"></i>
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="options">
+                            <router-link :to="{name: 'UserAdd', params: { id: $route.params.id}}" :class="{disabled: pending}" data-content="添加新成员">
+                                <i class="large add icon"></i>
+                            </router-link>
+                            <a :class="{disabled: pending}" @click="list" data-content="刷新列表">
+                                <i class="large refresh icon"></i>
+                            </a>
+                        </div>
+                    </th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>名称</th>
+                    <th>邮箱</th>
+                    <th>身份</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <transition-group name="fade" tag="tbody">
+                <tr v-for="(item, index) in items" :key="index">
+                    <td>
+                        {{index + 1}}
+                    </td>
+                    <td>
+                        <router-link :to="{name: 'User', params: {id: item._id}}">
+                            {{item.name}}
+                        </router-link>
+                    </td>
+                    <td>{{item.email}}</td>
+                    <td>{{item.role}}</td>
+                    <td>
+                        <div class="actions options" :class="{disabled:pending}">
+                            <router-link :to="{name: 'Storage', params: {id: item._id}}" data-content="访问此用户云存储">
+                                <i class="large teal cloud icon"></i>
+                            </router-link>
+                            <router-link :to="{name: 'UserEdit', params: {id: item._id}}" data-content="修改用户信息">
+                                <i class="large blue edit icon"></i>
+                            </router-link>
+                            <a data-content="删除此用户">
+                                <i class="large red trash icon"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </transition-group>
+        </table>
+    </div>
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
+
 export default {
-    
+    computed: {
+        ...mapGetters('users', ['items', 'pending', 'error']),
+        ...mapGetters('orgnizations', ['item']),
+    },
+    methods: {
+        ...mapActions('users', ['list']),
+        ...mapActions('orgnizations', ['show']),
+    },
+    created() {
+        this.show(this.$route.params.id);
+        this.list(this.$route.params.id);
+    },
+    updated() {
+        $('.options>a').popup({
+            position: 'bottom center'
+        });
+    }
 }
 </script>
+
+<style scoped>
+.ui.search {
+    display: inline-block;
+}
+
+a {
+    color: inherit;
+}
+
+a:hover {
+    cursor: pointer;
+}
+
+.ui.celled.table tr.borderless th {
+    border-left: 0;
+}
+
+.options {
+    text-align: right;
+}
+
+.options>a {
+    display: inline-block;
+    -webkit-transition: all 200ms ease-in;
+    -webkit-transform: scale(1);
+    -ms-transition: all 200ms ease-in;
+    -ms-transform: scale(1);
+    -moz-transition: all 200ms ease-in;
+    -moz-transform: scale(1);
+    transition: all 200ms ease-in;
+    transform: scale(1);
+}
+
+.options>a:hover {
+    -webkit-transition: all 200ms ease-in;
+    -webkit-transform: scale(1.5);
+    -ms-transition: all 200ms ease-in;
+    -ms-transform: scale(1.5);
+    -moz-transition: all 200ms ease-in;
+    -moz-transform: scale(1.5);
+    transition: all 200ms ease-in;
+    transform: scale(1.5);
+}
+
+tr .actions {
+    visibility: hidden;
+    padding-right: 32px;
+}
+
+tr:hover .actions {
+    visibility: visible;
+}
+
+tr .actions.disabled>a {
+    pointer-events: none;
+    cursor: default;
+}
+
+table.basic.selectable.table tr>td {
+    padding-left: 12px !important;
+}
+
+table.basic.selectable.table th span {
+    padding-right: 12px;
+}
+</style>

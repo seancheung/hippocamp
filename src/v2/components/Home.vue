@@ -5,7 +5,7 @@
                 <div class="ui container">
                     <div class="header item">酷糖</div>
                     <router-link :to="'/'" class="item" :class="{active: $route.name == 'Account'}"><i class="home icon"></i>主页</router-link>
-                    <router-link v-if="isAdmin" :to="'/orgs'" class="item" :class="{active: /^\/orgs/.test($route.path)}"><i class="sitemap icon"></i>组织</router-link>
+                    <router-link v-if="isAdmin" :to="'/orgs'" class="item" :class="{active: /^\/orgs/.test($route.path)}"><i class="sitemap icon"></i>管理</router-link>
                     <router-link v-else-if="profile.org" :to="`/orgs/${profile.org}`" class="item" :class="{active: /^\/orgs/.test($route.path)}"><i class="qrcode icon"></i>组织</router-link>
                     <router-link v-if="!isAdmin" :to="`/users/${profile._id}/storage`" class="item" :class="{active: /^\/users/.test($route.path)}"><i class="cloud icon"></i>存储</router-link>
                     <router-link :to="'/edit'" class="item" :class="{active: /^\/edit/.test($route.path)}"><i class="setting icon"></i>设置</router-link>
