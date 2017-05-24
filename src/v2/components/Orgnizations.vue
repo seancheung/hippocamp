@@ -4,11 +4,8 @@
             <thead>
                 <tr class="borderless">
                     <th :colspan="2">
-                        <div class="ui search">
-                            <div class="ui small icon input">
-                                <input type="text" placeholder="搜索...">
-                                <i class="search icon"></i>
-                            </div>
+                        <div class="ui breadcrumb">
+                            <div class="active section">组织</div>
                         </div>
                     </th>
                     <th>
@@ -40,7 +37,7 @@
                     </td>
                     <td>
                         <div class="actions options" :class="{disabled:pending}">
-                            <router-link :to="{name: 'Users', params: {id: item._id}}" data-content="管理此组织用户">
+                            <router-link :to="{name: 'Users', params: {id: item._id}}" data-content="管理此组织成员">
                                 <i class="large purple users icon"></i>
                             </router-link>
                             <router-link :to="{name: 'Serials', params: {id: item._id}}" data-content="管理此组织序列号">
@@ -49,7 +46,7 @@
                             <router-link :to="{name: 'OrgnizationEdit', params: {id: item._id}}" data-content="修改组织信息">
                                 <i class="large blue edit icon"></i>
                             </router-link>
-                            <a v-if="isSuperAdmin" data-content="删除此组织">
+                            <a v-if="isSuperAdmin" data-content="删除此组织" @click="$refs.modal.show(item._id)">
                                 <i class="large red trash icon"></i>
                             </a>
                         </div>
@@ -57,6 +54,7 @@
                 </tr>
             </transition-group>
         </table>
+        <modal ref="modal" :header="'删除组织?'" :approve="'确认'" :cancel="'取消'" @accept="id => remove(id).then(postRemove)">此操作不可撤销</modal>
     </div>
 </template>
 
@@ -68,7 +66,12 @@ export default {
         ...mapGetters('orgnizations', ['items', 'pending', 'error']),
         ...mapGetters(['isSuperAdmin'])
     },
-    methods: mapActions('orgnizations', ['list']),
+    methods: {
+        ...mapActions('orgnizations', ['list', 'remove']),
+        postRemove() {
+            this.list();
+        }
+    },
     created() {
         this.list();
     },

@@ -17,13 +17,15 @@ export default {
         items: null,
         item: null,
         pending: false,
-        error: null
+        error: null,
+        success: false
     },
     getters: {
         items: state => state.items,
         item: state => state.item,
         error: state => state.error,
         pending: state => state.pending,
+        success: state => state.success
     },
     actions: {
         list({commit}) {
@@ -100,6 +102,7 @@ export default {
         [types.BEGIN](state) {
             state.error = null;
             state.pending = true;
+            state.success = false;
         },
         [types.LIST](state, {err, items}) {
             state.items = items;
@@ -112,10 +115,12 @@ export default {
         [types.UPDATE](state, {err, item}) {
             state.item = item;
             state.error = err;
+            state.success = !err;
         },
         [types.CREATE](state, {err, item}) {
             state.item = item;
             state.error = err;
+            state.success = !err;
         },
         [types.REMOVE](state, {err}) {
             state.item = null;

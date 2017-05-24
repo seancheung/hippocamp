@@ -1,21 +1,15 @@
 <template>
     <div class="ui contianer">
-        <div class="ui breadcrumb" v-if="item">
-            <router-link :to="{name: 'Orgnizations'}" class="section">Orgnizations</router-link>
-            <i class="right angle icon divider"></i>
-            <router-link :to="{name: 'Orgnization', params: { id: $route.params.id}}" class="section">{{item.name}}</router-link>
-            <i class="right angle icon divider"></i>
-            <div class="active section">Users</div>
-        </div>
         <table class="ui very basic selectable table" v-if="items">
             <thead>
                 <tr class="borderless">
                     <th :colspan="4">
-                        <div class="ui search">
-                            <div class="ui small icon input">
-                                <input type="text" placeholder="搜索...">
-                                <i class="search icon"></i>
-                            </div>
+                        <div class="ui breadcrumb">
+                            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                            <i class="right caret icon divider"></i>
+                            <router-link :to="{name: 'Orgnization', params: {id: $route.params.id}}" class="section">{{item && item.name}}</router-link>
+                            <i class="right angle icon divider"></i>
+                            <div class="active section">用户</div>
                         </div>
                     </th>
                     <th>
@@ -57,7 +51,7 @@
                             <router-link :to="{name: 'UserEdit', params: {id: item._id}}" data-content="修改用户信息">
                                 <i class="large blue edit icon"></i>
                             </router-link>
-                            <a data-content="删除此用户">
+                            <a data-content="删除此用户" @click="$refs.modal.show(item._id)">
                                 <i class="large red trash icon"></i>
                             </a>
                         </div>
@@ -65,6 +59,7 @@
                 </tr>
             </transition-group>
         </table>
+        <modal ref="modal" :header="'删除用户?'" :approve="'确认'" :cancel="'取消'" @accept="id => remove(id).then(postRemove)">此操作不可撤销</modal>
     </div>
 </template>
 
@@ -74,11 +69,14 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
     computed: {
         ...mapGetters('users', ['items', 'pending', 'error']),
-        ...mapGetters('orgnizations', ['item']),
+        ...mapGetters('orgnizations', ['item'])
     },
     methods: {
-        ...mapActions('users', ['list']),
+        ...mapActions('users', ['list', 'remove']),
         ...mapActions('orgnizations', ['show']),
+        postRemove() {
+            this.list(this.$route.params.id);
+        }
     },
     created() {
         this.show(this.$route.params.id);
