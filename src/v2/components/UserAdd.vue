@@ -3,14 +3,14 @@
         <div class="ui breadcrumb">
             <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
             <i class="right caret icon divider"></i>
-            <router-link :to="{name: 'Orgnization', params: {id: $route.params.id}}" class="section">{{item && item.name}}</router-link>
+            <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
             <i class="right angle icon divider"></i>
-            <router-link :to="{name: 'Users', params: {id: $route.params.id}}" class="section">用户</router-link>
+            <router-link :to="{name: 'Users', params: {id}}" class="section">用户</router-link>
             <i class="right angle icon divider"></i>
             <div class="active section">添加</div>
         </div>
         <div class="ui center aligned segment">
-            <form class="ui equal width form" :class="{loading: pending, error, success}" @submit.prevent="create({id: $route.params.id, context: {name, email, password, role, firstName, lastName}}).then(postCreate)">
+            <form class="ui equal width form" :class="{loading: pending, error, success}" @submit.prevent="create({id, context: {name, email, password, role, firstName, lastName}}).then(postCreate)">
                 <div class="fields">
                     <div class="required field">
                         <label>名称</label>
@@ -49,13 +49,13 @@
                     </div>
                 </div>
                 <button class="ui button" :class="{disabled: !valid}" type="submit">添加</button>
-                <div class="ui error message">
+                <message :variation="'error'">
                     <div class="header">操作失败</div>
                     <p>{{ error }}</p>
-                </div>
-                <div class="ui success message">
+                </message>
+                <message :variation="'success'">
                     <div class="header">操作成功</div>
-                </div>
+                </message>
             </form>
         </div>
     </div>
@@ -65,6 +65,7 @@
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
+    props: ['id'],
     data() {
         return {
             name: null,
@@ -97,7 +98,7 @@ export default {
         }
     },
     created() {
-        this.show(this.$route.params.id);
+        this.show(this.id);
     }
 }
 </script>

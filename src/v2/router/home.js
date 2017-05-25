@@ -11,7 +11,8 @@ import UserAdd from '../components/UserAdd';
 import User from '../components/User';
 import UserEdit from '../components/UserEdit';
 import Serials from '../components/Serials';
-import SerialAdd from '../components/SerialAdd';
+import SerialsTable from '../components/SerialsTable';
+import SerialsGrid from '../components/SerialsGrid';
 import Storage from '../components/Storage';
 
 export default {
@@ -29,46 +30,58 @@ export default {
         name: 'Orgnizations',
         path: '/orgs',
         component: Orgnizations
-    },{
+    }, {
         name: 'OrgnizationAdd',
         path: '/orgs/add',
         component: OrgnizationAdd
     }, {
         name: 'Orgnization',
         path: '/orgs/:id',
-        component: Orgnization
+        component: Orgnization,
+        props: true
     }, {
         name: 'OrgnizationEdit',
         path: '/orgs/:id/edit',
-        component: OrgnizationEdit
+        component: OrgnizationEdit,
+        props: true
     }, {
         name: 'Users',
         path: '/orgs/:id/users',
         component: Users,
+        props: true
     }, {
         name: 'UserAdd',
         path: '/orgs/:id/users/add',
-        component: UserAdd
+        component: UserAdd,
+        props: true
     }, {
         name: 'User',
         path: '/users/:id',
-        component: User
+        component: User,
+        props: true
     }, {
         name: 'UserEdit',
         path: '/users/:id/edit',
-        component: UserEdit
+        component: UserEdit,
+        props: true
     }, {
-        name: 'Serials',
         path: '/orgs/:id/serials',
-        component: Serials
-    }, {
-        name: 'SerialAdd',
-        path: '/orgs/:id/serials/add',
-        component: SerialAdd
+        component: Serials,
+        props: true,
+        children: [{
+            name: 'Serials',
+            path: 'list',
+            component: SerialsTable
+        }, {
+            name: 'SerialsGrid',
+            path: 'grid',
+            component: SerialsGrid,
+        }]
     }, {
         name: 'Storage',
         path: 'users/:id/storage',
-        component: Storage
+        component: Storage,
+        props: true
     }],
     beforeEnter: (to, from, next) => {
         if (Vue.store.getters.profile) {

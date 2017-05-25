@@ -20,13 +20,13 @@
                     </div>
                 </div>
                 <button class="ui button" :class="{disabled: !name}" type="submit">添加</button>
-                <div class="ui error message">
+                <message :variation="'error'">
                     <div class="header">操作失败</div>
                     <p>{{ error }}</p>
-                </div>
-                <div class="ui success message">
+                </message>
+                <message :variation="'success'">
                     <div class="header">操作成功</div>
-                </div>
+                </message>
             </form>
         </div>
     </div>

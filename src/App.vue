@@ -47,5 +47,30 @@ export default {
 .fade-leave-active {
     opacity: 0
 }
+
+.hover-links>a,
+.hover-effect {
+    display: inline-block;
+    -webkit-transition: all 200ms ease-in;
+    -webkit-transform: scale(1);
+    -ms-transition: all 200ms ease-in;
+    -ms-transform: scale(1);
+    -moz-transition: all 200ms ease-in;
+    -moz-transform: scale(1);
+    transition: all 200ms ease-in;
+    transform: scale(1);
+}
+
+.hover-links>a:hover,
+.hover-effect:hover {
+    -webkit-transition: all 200ms ease-in;
+    -webkit-transform: scale(1.5);
+    -ms-transition: all 200ms ease-in;
+    -ms-transform: scale(1.5);
+    -moz-transition: all 200ms ease-in;
+    -moz-transform: scale(1.5);
+    transition: all 200ms ease-in;
+    transform: scale(1.5);
+}
 </style>
 

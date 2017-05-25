@@ -44,9 +44,10 @@ import moment from 'moment';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
+    props: ['id'],
     data() {
         return {
-            id: null
+            orgnization: null
         }
     },
     computed: {
@@ -55,10 +56,10 @@ export default {
     methods: {
         ...mapActions('users', ['show', 'remove']),
         postRemove() {
-            this.$router.push({ name: 'Users', params: { id: this.id } });
+            this.$router.push({ name: 'Users', params: { id: this.orgnization } });
         },
         sync() {
-            this.id = this.item && this.item.org._id;
+            this.orgnization = this.item && this.item.org._id;
         }
     },
     filters: {
@@ -75,7 +76,7 @@ export default {
         });
     },
     created() {
-        this.show(this.$route.params.id).then(this.sync);
+        this.show(this.id).then(this.sync);
     }
 }
 </script>

@@ -7,17 +7,17 @@
                         <div class="ui breadcrumb">
                             <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
                             <i class="right caret icon divider"></i>
-                            <router-link :to="{name: 'Orgnization', params: {id: $route.params.id}}" class="section">{{item && item.name}}</router-link>
+                            <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
                             <i class="right angle icon divider"></i>
                             <div class="active section">用户</div>
                         </div>
                     </th>
                     <th>
-                        <div class="options">
-                            <router-link :to="{name: 'UserAdd', params: { id: $route.params.id}}" :class="{disabled: pending}" data-content="添加新成员">
+                        <div class="hover-links options">
+                            <router-link :to="{name: 'UserAdd', params: {id}}" :class="{disabled: pending}" data-content="添加新成员">
                                 <i class="large add icon"></i>
                             </router-link>
-                            <a :class="{disabled: pending}" @click="list" data-content="刷新列表">
+                            <a :class="{disabled: pending}" @click="list(id)" data-content="刷新列表">
                                 <i class="large refresh icon"></i>
                             </a>
                         </div>
@@ -44,7 +44,7 @@
                     <td>{{item.email}}</td>
                     <td>{{item.role}}</td>
                     <td>
-                        <div class="actions options" :class="{disabled:pending}">
+                        <div class="hover-links actions options" :class="{disabled:pending}">
                             <router-link :to="{name: 'Storage', params: {id: item._id}}" data-content="访问此用户云存储">
                                 <i class="large teal cloud icon"></i>
                             </router-link>
@@ -67,6 +67,7 @@
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
+    props: ['id'],
     computed: {
         ...mapGetters('users', ['items', 'pending', 'error']),
         ...mapGetters('orgnizations', ['item'])
@@ -75,12 +76,12 @@ export default {
         ...mapActions('users', ['list', 'remove']),
         ...mapActions('orgnizations', ['show']),
         postRemove() {
-            this.list(this.$route.params.id);
+            this.list(this.id);
         }
     },
     created() {
-        this.show(this.$route.params.id);
-        this.list(this.$route.params.id);
+        this.show(this.id);
+        this.list(this.id);
     },
     updated() {
         $('.options>a').popup({
@@ -109,29 +110,6 @@ a:hover {
 
 .options {
     text-align: right;
-}
-
-.options>a {
-    display: inline-block;
-    -webkit-transition: all 200ms ease-in;
-    -webkit-transform: scale(1);
-    -ms-transition: all 200ms ease-in;
-    -ms-transform: scale(1);
-    -moz-transition: all 200ms ease-in;
-    -moz-transform: scale(1);
-    transition: all 200ms ease-in;
-    transform: scale(1);
-}
-
-.options>a:hover {
-    -webkit-transition: all 200ms ease-in;
-    -webkit-transform: scale(1.5);
-    -ms-transition: all 200ms ease-in;
-    -ms-transform: scale(1.5);
-    -moz-transition: all 200ms ease-in;
-    -moz-transform: scale(1.5);
-    transition: all 200ms ease-in;
-    transform: scale(1.5);
 }
 
 tr .actions {

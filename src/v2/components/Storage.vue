@@ -1,13 +1,13 @@
 <template>
-    <div class="ui basic segment" v-if="user">
+    <div class="ui basic segment">
         <div class="ui breadcrumb">
             <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
             <i class="right caret icon divider"></i>
-            <router-link v-if="user.org" :to="{name: 'Orgnization', params: {id: user.org._id}}" class="section">{{user.org.name}}</router-link>
+            <router-link v-if="user && user.org" :to="{name: 'Orgnization', params: {id: user.org._id}}" class="section">{{user.org.name}}</router-link>
             <i class="right angle icon divider"></i>
-            <router-link v-if="user.org" :to="{name: 'Users', params: {id: user.org._id}}" class="section">用户</router-link>
+            <router-link v-if="user && user.org" :to="{name: 'Users', params: {id: user.org._id}}" class="section">用户</router-link>
             <i class="right caret icon divider"></i>
-            <router-link :to="{name: 'User', params: {id: $route.params.id}}" class="section">{{user && user.name}}</router-link>
+            <router-link v-if="user" :to="{name: 'User', params: {id}}" class="section">{{user && user.name}}</router-link>
             <i class="right angle icon divider"></i>
             <div class="active section">存储</div>
         </div>
@@ -59,8 +59,7 @@
                 </tr>
                 <tr class="message box">
                     <th colspan="6">
-                        <div class="ui small info message">
-                            <i class="close icon" @click="dismiss"></i>
+                        <message :dismissable="true" :variation="'small info'">
                             <div class="header">
                                 提示
                             </div>
@@ -73,18 +72,17 @@
                                 <li>支持拖拽文件进行上传</li>
                                 <li>支持上传zip文件并解压到当前路径</li>
                             </ul>
-                        </div>
+                        </message>
                     </th>
                 </tr>
                 <tr v-show="error" class="message box">
                     <th colspan="6">
-                        <div class="ui small error message">
-                            <i class="close icon" @click="dismiss"></i>
+                        <message :dismissable="true" :variant="'small error'">
                             <div class="header">
                                 错误
                             </div>
                             <p>{{ error }}</p>
-                        </div>
+                        </message>
                     </th>
                 </tr>
                 <tr>
@@ -126,7 +124,7 @@
                     <td></td>
                     <td>
                         <div v-if="anyChecked">
-                            <a @click="removeChecked">
+                            <a @click="$refs.bulk.show()">
                                 <i class="large trash icon"></i>
                             </a>
                         </div>
@@ -186,14 +184,14 @@
                     <td>{{content.size | toSize}}</td>
                     <td>{{content.time | toDate}}</td>
                     <td>
-                        <div class="actions" :class="{disabled:pending}">
+                        <div class="hover-links actions" :class="{disabled:pending}">
                             <a @click="downloadFile(content)">
                                 <i class="large cloud download icon" :class="{disabled:pending}"></i>
                             </a>
                             <a @click="edit(content)">
                                 <i class="large edit icon" :class="{disabled:pending}"></i>
                             </a>
-                            <a @click="removeFile(content)">
+                            <a @click="$refs.remove.show(content)">
                                 <i class="large trash icon" :class="{disabled:pending}"></i>
                             </a>
                         </div>
@@ -201,6 +199,8 @@
                 </tr>
             </transition-group>
         </table>
+        <modal ref="bulk" :header="'删除选中的文件?'" :approve="'确认'" :cancel="'取消'" @accept="removeChecked">此操作不可撤销</modal>
+        <modal ref="remove" :header="'删除文件?'" :approve="'确认'" :cancel="'取消'" @accept="content => removeFile(content)">此操作不可撤销</modal>
     </div>
 </template>
 
@@ -213,6 +213,7 @@ import Clipboard from 'clipboard';
 import toastr from 'toastr';
 import { mapGetters, mapActions } from 'vuex';
 export default {
+    props: ['id'],
     data() {
         return {
             inserting: null,
@@ -262,38 +263,38 @@ export default {
             this.inserting = true;
         },
         downloadFile(item) {
-            this.download({ id: this.$route.params.id, path: item.path })
+            this.download({ id: this.id, path: item.path })
                 .then(res => {
                     saveAs(new Blob([res.data], { type: res.headers.get('content-type') }), res.headers.get('content-disposition').match(/filename="([^"]+)"/)[1]);
                 });
         },
         listDir(path) {
-            this.show({ id: this.$route.params.id, path });
+            this.show({ id: this.id, path });
         },
         listParent(item) {
-            this.show({ id: this.$route.params.id, path: item.path.substr(0, item.path.length - item.name.length) || '/' });
+            this.show({ id: this.id, path: item.path.substr(0, item.path.length - item.name.length) || '/' });
         },
         checkAll(checked) {
-            this.checked = checked ? this.item.contents.filter(i => i.path) : null;
+            this.checked = checked ? this.item.contents.map(i => i.path) : null;
         },
         removeChecked() {
             if (this.checked && this.checked.length) {
-                this.bulkRemove({ id: this.$route.params.id, files: this.checked });
+                this.bulkRemove({ id: this.id, files: this.checked });
             }
         },
         createDir() {
-            this.upload({ id: this.$route.params.id, path: this.item.path + '/' + this.name })
+            this.upload({ id: this.id, path: this.item.path + '/' + this.name })
                 .finally(this.reset);
         },
         isChecked(item) {
             return this.checked && this.checked.length && this.checked.includes(item.path);
         },
         check(item, checked) {
-            if (chekced) {
+            if (checked) {
                 if (!this.checked) {
                     this.checked = [item.path];
                 } else if (this.checked.includes(item.path)) {
-                    this.chekced.push(item.path);
+                    this.checked.push(item.path);
                 }
             } else if (this.checked && this.checked.length) {
                 const index = this.checked.indexOf(item.path);
@@ -303,11 +304,11 @@ export default {
             }
         },
         renameFile(item) {
-            this.rename({ id: this.$route.params.id, path: item.path, name: this.name })
+            this.rename({ id: this.id, path: item.path, name: this.name })
                 .finally(this.reset);
         },
         removeFile(item) {
-            this.remove({ id: this.$route.params.id, path: item.path });
+            this.remove({ id: this.id, path: item.path });
         },
         dragenter(e) {
             this.highlight = true;
@@ -340,7 +341,7 @@ export default {
                 }
             }
             if (files.length) {
-                this.upload({ files });
+                 this.upload({ id: this.id, files });
             }
         },
         toIcon(mime) {
@@ -394,12 +395,12 @@ export default {
         },
         uploadFiles(e) {
             const files = e.target.files;
-            this.upload({ id: this.$route.params.id, files });
+            this.upload({ id: this.id, files });
             e.target.value = null;
         },
         uploadArchives(e) {
             const files = e.target.files;
-            this.upload({ id: this.$route.params.id, files, unarchive: true });
+            this.upload({ id: this.id, files, unarchive: true });
             e.target.value = null;
         },
         uploadDir(e) {
@@ -435,7 +436,7 @@ export default {
                     })
                     .then(blob => {
                         blob.name = 'blob.zip';
-                        return this.upload({ id: this.$route.params.id, files: [blob], unarchive: true });
+                        return this.upload({ id: this.id, files: [blob], unarchive: true });
                     })
                     .catch(err => {
                         console.log(err);
@@ -457,8 +458,8 @@ export default {
         }
     },
     created() {
-        this.showUser(this.$route.params.id);
-        this.show({ id: this.$route.params.id });
+        this.showUser(this.id);
+        this.show({ id: this.id });
     },
     updated() {
         $('.ui.dropdown').not('.ready').addClass('ready').dropdown();
@@ -530,11 +531,7 @@ table.basic.selectable.table th span {
     display: inline;
 }
 
-div.dropzone:hover {
-    cursor: pointer;
-}
-
-.table.highlight {
+table.highlight {
     border: 2px dashed #dddddd;
     padding: 4px;
 }
@@ -550,7 +547,7 @@ div.dropzone:hover {
     cursor: default;
 }
 
-.dimmer .progress {
+#progress-bar {
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;

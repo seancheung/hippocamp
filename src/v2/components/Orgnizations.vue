@@ -9,7 +9,7 @@
                         </div>
                     </th>
                     <th>
-                        <div class="options">
+                        <div class="hover-links options">
                             <router-link v-if="isSuperAdmin" :to="{name: 'OrgnizationAdd'}" :class="{disabled: pending}" data-content="添加新组织">
                                 <i class="large add icon"></i>
                             </router-link>
@@ -36,7 +36,7 @@
                         </router-link>
                     </td>
                     <td>
-                        <div class="actions options" :class="{disabled:pending}">
+                        <div class="hover-links actions options" :class="{disabled:pending}">
                             <router-link :to="{name: 'Users', params: {id: item._id}}" data-content="管理此组织成员">
                                 <i class="large purple users icon"></i>
                             </router-link>
@@ -102,29 +102,6 @@ a:hover {
 
 .options {
     text-align: right;
-}
-
-.options>a {
-    display: inline-block;
-    -webkit-transition: all 200ms ease-in;
-    -webkit-transform: scale(1);
-    -ms-transition: all 200ms ease-in;
-    -ms-transform: scale(1);
-    -moz-transition: all 200ms ease-in;
-    -moz-transform: scale(1);
-    transition: all 200ms ease-in;
-    transform: scale(1);
-}
-
-.options>a:hover {
-    -webkit-transition: all 200ms ease-in;
-    -webkit-transform: scale(1.5);
-    -ms-transition: all 200ms ease-in;
-    -ms-transform: scale(1.5);
-    -moz-transition: all 200ms ease-in;
-    -moz-transform: scale(1.5);
-    transition: all 200ms ease-in;
-    transform: scale(1.5);
 }
 
 tr .actions {

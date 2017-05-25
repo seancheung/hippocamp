@@ -43,6 +43,7 @@ import moment from 'moment';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
+    props: ['id'],
     computed: {
         ...mapGetters('orgnizations', ['item', 'pending', 'error']),
         ...mapGetters(['isSuperAdmin'])
@@ -64,7 +65,7 @@ export default {
         });
     },
     created() {
-        this.show(this.$route.params.id);
+        this.show(this.id);
     }
 }
 </script>

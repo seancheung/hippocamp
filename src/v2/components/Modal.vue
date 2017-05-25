@@ -1,11 +1,11 @@
 <template>
     <div class="ui small modal">
-        <div class="header">{{header}}</div>
+        <div v-if="header" class="header">{{header}}</div>
         <div class="content">
             <slot></slot>
         </div>
         <div class="actions">
-            <div v-if="approve" class="ui approve button">{{approve}}</div>
+            <div v-if="approve" class="ui approve button" :class="{disabled: unacceptable}">{{approve}}</div>
             <div v-if="cancel" class="ui cancel button">{{cancel}}</div>
         </div>
     </div>
@@ -13,7 +13,7 @@
 
 <script>
 export default {
-    props: ['header', 'approve', 'cancel'],
+    props: ['header', 'approve', 'cancel', 'unacceptable'],
     data() {
         return {
             context: null

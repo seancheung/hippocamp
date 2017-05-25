@@ -7,12 +7,12 @@
             <i class="right angle icon divider"></i>
             <router-link v-if="item" :to="{name: 'Users', params: {id: item.org._id}}" class="section">用户</router-link>
             <i class="right caret icon divider"></i>
-            <router-link :to="{name: 'User', params: {id: $route.params.id}}" class="section">{{item && item.name}}</router-link>
+            <router-link :to="{name: 'User', params: {id}}" class="section">{{item && item.name}}</router-link>
             <i class="right angle icon divider"></i>
             <div class="active section">编辑</div>
         </div>
         <div class="ui center aligned segment">
-            <form class="ui equal width form" :class="{loading: pending, error, success}" @submit.prevent="update({id: $route.params.id, context: {role, firstName, lastName}}).then(postUpdate)">
+            <form class="ui equal width form" :class="{loading: pending, error, success}" @submit.prevent="update({id, context: {role, firstName, lastName}}).then(postUpdate)">
                 <div class="fields">
                     <div class="disabled field">
                         <label>名称</label>
@@ -45,16 +45,13 @@
                     </div>
                 </div>
                 <button class="ui button" :class="{disabled: !valid}" type="submit">更新</button>
-                <div class="ui error message">
+                <message :variation="'error'">
                     <div class="header">操作失败</div>
                     <p>{{ error }}</p>
-                    <button class="ui icon button">
-                        <i class="refresh icon"></i>
-                    </button>
-                </div>
-                <div class="ui success message">
+                </message>
+                <message :variation="'success'">
                     <div class="header">操作成功</div>
-                </div>
+                </message>
             </form>
         </div>
     </div>
@@ -64,6 +61,7 @@
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
+    props: ['id'],
     data() {
         return {
             role: null,
@@ -89,7 +87,7 @@ export default {
         }
     },
     created() {
-        this.show(this.$route.params.id).then(this.sync);
+        this.show(this.id).then(this.sync);
     }
 }
 </script>

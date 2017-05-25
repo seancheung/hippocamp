@@ -50,7 +50,7 @@ export default {
                 });
         },
         download({commit, getters}, {id, path}) {
-            return Promise.cast(Vue.http.get(`/api/v2/users/${id}/storage/dl/${path}`, {
+            return Promise.cast(Vue.http.get(`/api/v2/users/${id}/storage/d/${path}?attachment=true`, {
                 responseType: 'arraybuffer',
                 before(req) {
                     commit(types.BEGIN, req);
@@ -65,9 +65,10 @@ export default {
             }))
                 .then(res => {
                     commit(types.DOWNLOAD, {});
+                    return res;
                 })
                 .catch(res => {
-                    commit(types.SHDOWNLOADOW, {err: res.body.message || res.body});
+                    commit(types.DOWNLOAD, {err: res.body.message || res.body});
                 })
                 .finally(() => {
                     commit(types.END);

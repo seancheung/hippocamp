@@ -20,10 +20,10 @@
                         <button class="ui fluid large blue submit button" type="submit">登陆</button>
                     </div>
     
-                    <div class="ui error message">
+                    <message :variation="'error'">
                         <div class="header">登陆失败</div>
                         <p>{{ error }}</p>
-                    </div>
+                    </message>
     
                 </form>
             </div>

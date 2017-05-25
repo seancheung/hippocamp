@@ -3,12 +3,12 @@
         <div class="ui breadcrumb">
             <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
             <i class="right caret icon divider"></i>
-            <router-link :to="{name: 'Orgnization', params: {id: $route.params.id}}" class="section">{{item && item.name}}</router-link>
+            <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
             <i class="right angle icon divider"></i>
             <div class="active section">编辑</div>
         </div>
         <div class="ui center aligned segment">
-            <form class="ui equal width form" :class="{loading: pending, error, success}" @submit.prevent="update({id: $route.params.id, context: {desc}}).then(postUpdate)">
+            <form class="ui equal width form" :class="{loading: pending, error, success}" @submit.prevent="update({id, context: {desc}}).then(postUpdate)">
                 <div class="fields">
                     <div class="disabled field">
                         <label>名称</label>
@@ -22,13 +22,13 @@
                     </div>
                 </div>
                 <button class="ui button" type="submit" :class="{disabled: !valid}">更新</button>
-                <div class="ui error message">
+                <message :variation="'error'">
                     <div class="header">操作失败</div>
                     <p>{{ error }}</p>
-                </div>
-                <div class="ui success message">
+                </message>
+                <message :variation="'success'">
                     <div class="header">操作成功</div>
-                </div>
+                </message>
             </form>
         </div>
     </div>
@@ -38,6 +38,7 @@
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
+    props: ['id'],
     data() {
         return {
             desc: null
@@ -59,7 +60,7 @@ export default {
         }
     },
     created() {
-        this.show(this.$route.params.id).then(this.sync);
+        this.show(this.id).then(this.sync);
     }
 }
 </script>
