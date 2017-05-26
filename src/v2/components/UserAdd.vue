@@ -1,12 +1,18 @@
 <template>
     <div class="ui container">
         <div class="ui breadcrumb">
-            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
-            <i class="right caret icon divider"></i>
-            <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
-            <i class="right angle icon divider"></i>
-            <router-link :to="{name: 'Users', params: {id}}" class="section">用户</router-link>
-            <i class="right angle icon divider"></i>
+            <template v-if="permission('orgnizations', 'list')">
+                <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                <i class="right caret icon divider"></i>
+            </template>
+            <template v-if="permission('orgnizations', 'show', id)">
+                <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
+            <template v-if="permission('users', 'list', id)">
+                <router-link :to="{name: 'Users', params: {id}}" class="section">用户</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
             <div class="active section">添加</div>
         </div>
         <div class="ui center aligned segment">
@@ -29,13 +35,13 @@
                         <input v-model="password" type="password" placeholder="请输入用户密码">
                     </div>
                 </div>
-                <div class="required field">
+                <div v-if="permission('users', 'option')" class="required field">
                     <label>身份</label>
                     <select class="ui dropdown" v-model="role">
-                        <option value="Member">普通成员</option>
-                        <option value="Client">组织管理员</option>
-                        <option value="Admin">管理员</option>
-                        <option value="SuperAdmin">超级管理员</option>
+                        <option v-if="permission('users', 'option', 'Member')" value="Member">普通成员</option>
+                        <option v-if="permission('users', 'option', 'Client')" value="Client">组织管理员</option>
+                        <option v-if="permission('users', 'option', 'Admin')" value="Admin">管理员</option>
+                        <option v-if="permission('users', 'option', 'SuperAdmin')" value="SuperAdmin">超级管理员</option>
                     </select>
                 </div>
                 <div class="fields">
@@ -79,6 +85,7 @@ export default {
     computed: {
         ...mapGetters('users', ['pending', 'error', 'success']),
         ...mapGetters('orgnizations', ['item']),
+        ...mapGetters(['permission']),
         valid() {
             return this.name && this.email && this.password && this.role
         }

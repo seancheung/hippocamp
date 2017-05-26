@@ -2,22 +2,26 @@
     <div class="ui contianer">
         <table class="ui very basic selectable table" v-if="items">
             <thead>
-                <tr class="borderless">
+                <tr class="borderless" v-if="orgnization">
                     <th :colspan="4">
                         <div class="ui breadcrumb">
-                            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
-                            <i class="right caret icon divider"></i>
-                            <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
-                            <i class="right angle icon divider"></i>
+                            <template v-if="permission('orgnizations', 'list')">
+                                <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                                <i class="right caret icon divider"></i>
+                            </template>
+                            <template v-if="permission('orgnizations', 'show', orgnization)">
+                                <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{orgnization.name}}</router-link>
+                                <i class="right angle icon divider"></i>
+                            </template>
                             <div class="active section">用户</div>
                         </div>
                     </th>
                     <th>
                         <div class="hover-links options">
-                            <router-link :to="{name: 'UserAdd', params: {id}}" :class="{disabled: pending}" data-content="添加新成员">
+                            <router-link v-if="permission('users', 'create', orgnization)" :to="{name: 'UserAdd', params: {id}}" :class="{disabled: pending}" data-content="添加">
                                 <i class="large add icon"></i>
                             </router-link>
-                            <a :class="{disabled: pending}" @click="list(id)" data-content="刷新列表">
+                            <a :class="{disabled: pending}" @click="list(id)" data-content="刷新">
                                 <i class="large refresh icon"></i>
                             </a>
                         </div>
@@ -37,21 +41,21 @@
                         {{index + 1}}
                     </td>
                     <td>
-                        <router-link :to="{name: 'User', params: {id: item._id}}">
+                        <router-link v-if="permission('users', 'show', {_id: item._id, org: id})" :to="{name: 'User', params: {id: item._id}}">
                             {{item.name}}
                         </router-link>
                     </td>
                     <td>{{item.email}}</td>
                     <td>{{item.role}}</td>
                     <td>
-                        <div class="hover-links actions options" :class="{disabled:pending}">
-                            <router-link :to="{name: 'Storage', params: {id: item._id}}" data-content="访问此用户云存储">
+                        <div class="hover-links actions options" :class="{disabled: pending}">
+                            <router-link v-if="permission('storage', 'show', {_id: item._id, role: item.role, org: id})" :to="{name: 'Storage', params: {id: item._id}}" data-content="云存储">
                                 <i class="large teal cloud icon"></i>
                             </router-link>
-                            <router-link :to="{name: 'UserEdit', params: {id: item._id}}" data-content="修改用户信息">
+                            <router-link v-if="permission('users', 'update', {_id: item._id, role: item.role, org: id})" :to="{name: 'UserEdit', params: {id: item._id}}" data-content="编辑">
                                 <i class="large blue edit icon"></i>
                             </router-link>
-                            <a data-content="删除此用户" @click="$refs.modal.show(item._id)">
+                            <a v-if="permission('users', 'remove', {_id: item._id, role: item.role, org: id})" data-content="删除" @click="$refs.modal.show(item._id)">
                                 <i class="large red trash icon"></i>
                             </a>
                         </div>
@@ -70,7 +74,10 @@ export default {
     props: ['id'],
     computed: {
         ...mapGetters('users', ['items', 'pending', 'error']),
-        ...mapGetters('orgnizations', ['item'])
+        ...mapGetters('orgnizations', {
+            orgnization: 'item'
+        }),
+        ...mapGetters(['permission'])
     },
     methods: {
         ...mapActions('users', ['list', 'remove']),

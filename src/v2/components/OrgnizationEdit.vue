@@ -1,10 +1,14 @@
 <template>
     <div class="ui container">
         <div class="ui breadcrumb">
-            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
-            <i class="right caret icon divider"></i>
-            <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
-            <i class="right angle icon divider"></i>
+            <template v-if="permission('orgnizations', 'list')">
+                <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                <i class="right caret icon divider"></i>
+            </template>
+            <template v-if="permission('orgnizations', 'show', id)">
+                <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
             <div class="active section">编辑</div>
         </div>
         <div class="ui center aligned segment">
@@ -46,6 +50,7 @@ export default {
     },
     computed: {
         ...mapGetters('orgnizations', ['item', 'pending', 'error', 'success']),
+        ...mapGetters(['permission']),
         valid() {
             return this.item && this.item.desc != this.desc;
         }

@@ -1,6 +1,7 @@
 export default {
     route: null,
-    profile: null,
+    account: null,
     error: null,
-    pending: false
+    pending: false,
+    success: false
 }

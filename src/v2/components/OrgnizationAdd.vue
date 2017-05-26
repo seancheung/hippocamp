@@ -1,8 +1,10 @@
 <template>
     <div class="ui container">
         <div class="ui breadcrumb">
-            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
-            <i class="right angle icon divider"></i>
+            <template v-if="permission('orgnizations', 'list')">
+                <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
             <div class="active section">添加</div>
         </div>
         <div class="ui center aligned segment">
@@ -42,7 +44,10 @@ export default {
             desc: null
         }
     },
-    computed: mapGetters('orgnizations', ['pending', 'error', 'success']),
+    computed: {
+        ...mapGetters('orgnizations', ['pending', 'error', 'success']),
+        ...mapGetters(['permission'])
+    },
     methods: {
         ...mapActions('orgnizations', ['create']),
         postCreate() {

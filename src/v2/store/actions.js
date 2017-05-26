@@ -7,19 +7,18 @@ Vue.use(VueCookie);
 
 export default {
     redirect({commit}, route) {
-        commit(types.REDIRECT, route);
-        return Promise.resolve();
+        return Promise.resolve(commit(types.REDIRECT, route));
     },
 
     login({commit, dispatch}, {account, password}) {
         commit(types.BEGIN);
         return Promise.cast(Vue.http.post('/api/v2/account/login', {account, password}))
             .then(res => {
-                commit(types.AUTH, {jwt: res.body.jwt, expires: res.body.expires, save: true});
+                commit(types.LOGIN, {jwt: res.body.jwt, expires: res.body.expires, save: true});
                 return dispatch('auth');
             })
             .catch(res => {
-                commit(types.AUTH, {err: res.body.message || res.body});
+                commit(types.LOGIN, {err: res.body.message || res.body});
             })
             .finally(() => {
                 commit(types.END);
@@ -27,8 +26,7 @@ export default {
     },
 
     logout({commit}) {
-        commit(types.AUTH, {save: true});
-        return Promise.resolve();
+        return Promise.resolve(commit(types.LOGIN, {save: true}));
     },
 
     auth({commit}) {        
@@ -37,16 +35,30 @@ export default {
             commit(types.BEGIN);
             return Promise.cast(Vue.http.get('/api/v2/account'))
                 .then(res => {
-                        commit(types.AUTH, {profile: res.body});
-                    })
-                    .catch(err => {
-                        commit(types.AUTH, {save: true});
-                    })
-                    .finally(() => {
-                        commit(types.END);
-                    });
+                    commit(types.AUTH, {account: res.body});
+                })
+                .catch(err => {
+                    commit(types.AUTH, {save: true});
+                })
+                .finally(() => {
+                    commit(types.END);
+                });
         } else {
             return Promise.resolve();
         }
+    },
+
+    update({commit}, context) {
+        commit(types.BEGIN);
+        return Promise.cast(Vue.http.put('/api/v2/account', context))
+            .then(res => {
+                commit(types.UPDATE, {account: res.body});
+            })
+            .catch(err => {
+                commit(types.UPDATE, {err: res.body.message || res.body});
+            })
+            .finally(() => {
+                commit(types.END);
+            });
     }
 }

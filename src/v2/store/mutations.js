@@ -5,15 +5,28 @@ export default {
     [types.BEGIN](state) {
         state.error = null;
         state.pending = true;
+        state.success = false;
     },
 
     [types.REDIRECT](state, route) {
         state.route = route;
     },
 
-    [types.AUTH](state, {jwt, expires, profile, err, save}) {
+    [types.UPDATE](state, {err, account}) {
         state.error = err;
-        state.profile = profile;
+        state.account = account;
+        state.success = !err;
+    },
+
+    [types.AUTH](state, {account, err}) {
+        state.error = err;
+        state.account = account;
+    },
+
+    [types.LOGIN](state, {jwt, expires, err, save}) {
+        state.error = err;
+        state.route = null;
+        state.account = null;
         if(save) {
             if(jwt) {
                 Vue.cookie.set('jwt', jwt, { expires: expires.toUpperCase() });

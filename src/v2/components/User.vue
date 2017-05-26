@@ -1,12 +1,18 @@
 <template>
     <div class="ui container" v-if="item">
         <div class="ui breadcrumb">
-            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
-            <i class="right caret icon divider"></i>
-            <router-link v-if="item.org" :to="{name: 'Orgnization', params: {id: item.org._id}}" class="section">{{item.org.name}}</router-link>
-            <i class="right angle icon divider"></i>
-            <router-link v-if="item.org" :to="{name: 'Users', params: {id: item.org._id}}" class="section">用户</router-link>
-            <i class="right caret icon divider"></i>
+            <template v-if="permission('orgnizations', 'list')">
+                <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                <i class="right caret icon divider"></i>
+            </template>
+            <template v-if="permission('orgnizations', 'show', item.org)">
+                <router-link :to="{name: 'Orgnization', params: {id: item.org._id}}" class="section">{{item.org.name}}</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
+            <template v-if="permission('users', 'list', item.org)">
+                <router-link :to="{name: 'Users', params: {id: item.org._id}}" class="section">用户</router-link>
+                <i class="right caret icon divider"></i>
+            </template>
             <div class="active section">{{item.name}}</div>
         </div>
         <div class="ui center aligned basic segment">
@@ -15,20 +21,23 @@
                     <div class="header">{{item.name}}</div>
                 </div>
                 <div class="content">
-                    <div class="ui sub header"><i class="mail icon"></i>{{item.email}}</div>
+                    <div class="ui sub header">
+                        <i class="mail icon"></i>{{item.email}}</div>
                     <div class="meta">{{item.profile | profile}}</div>
-                    <div class="meta"><i class="user icon"></i>{{item.role}}</div>
-                    <div class="meta"><i class="calendar icon"></i>{{item.createdAt | moment}}</div>
+                    <div class="meta">
+                        <i class="user icon"></i>{{item.role}}</div>
+                    <div class="meta">
+                        <i class="calendar icon"></i>{{item.createdAt | moment}}</div>
                 </div>
                 <div class="extra content">
-                    <div class="ui basic three buttons">
-                        <router-link :to="{name: 'Storage', params: {id: item._id}}" data-content="访问此用户云存储" class="ui button">
+                    <div class="ui basic three buttons" :class="{disabled: pending}">
+                        <router-link v-if="permission('storage', 'show', item)" :to="{name: 'Storage', params: {id: item._id}}" data-content="云存储" class="ui button">
                             <i class="teal cloud icon"></i>
                         </router-link>
-                        <router-link :to="{name: 'UserEdit', params: {id: item._id}}" data-content="修改用户信息" class="ui button">
+                        <router-link v-if="permission('users', 'update', item)" :to="{name: 'UserEdit', params: {id: item._id}}" data-content="编辑" class="ui button">
                             <i class="blue edit icon"></i>
                         </router-link>
-                        <a data-content="删除此用户" @click="$refs.modal.show(item._id)" class="ui button">
+                        <a v-if="permission('users', 'remove', item)" data-content="删除" @click="$refs.modal.show(item._id)" class="ui button">
                             <i class="red trash icon"></i>
                         </a>
                     </div>
@@ -51,7 +60,8 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('users', ['item', 'pending', 'error'])
+        ...mapGetters('users', ['item', 'pending', 'error']),
+        ...mapGetters(['permission'])
     },
     methods: {
         ...mapActions('users', ['show', 'remove']),

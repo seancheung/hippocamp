@@ -179,7 +179,7 @@ export default {
                 });
         },
         abort({commit}) {
-            commit(types.END);
+            return Promise.resolve(commit(types.END));
         }
     },
     mutations: {

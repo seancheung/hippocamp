@@ -1,17 +1,25 @@
 <template>
     <div class="ui basic segment">
-        <div class="ui breadcrumb">
-            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
-            <i class="right caret icon divider"></i>
-            <router-link v-if="user && user.org" :to="{name: 'Orgnization', params: {id: user.org._id}}" class="section">{{user.org.name}}</router-link>
-            <i class="right angle icon divider"></i>
-            <router-link v-if="user && user.org" :to="{name: 'Users', params: {id: user.org._id}}" class="section">用户</router-link>
-            <i class="right caret icon divider"></i>
-            <router-link v-if="user" :to="{name: 'User', params: {id}}" class="section">{{user && user.name}}</router-link>
-            <i class="right angle icon divider"></i>
+        <div class="ui breadcrumb" v-if="user">
+            <template v-if="permission('orgnizations', 'list')">
+                <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                <i class="right caret icon divider"></i>
+            </template>
+            <template v-if="permission('orgnizations', 'show', user.org)">
+                <router-link :to="{name: 'Orgnization', params: {id: user.org._id}}" class="section">{{user.org.name}}</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
+            <template v-if="permission('users', 'list', user.org)">
+                <router-link :to="{name: 'Users', params: {id: user.org._id}}" class="section">用户</router-link>
+                <i class="right caret icon divider"></i>
+            </template>
+            <template v-if="permission('users', 'show', user)">
+                <router-link :to="{name: 'User', params: {id}}" class="section">{{user && user.name}}</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
             <div class="active section">存储</div>
         </div>
-        <div class="ui inverted dimmer" :class="{active:wait}">
+        <div class="ui inverted dimmer" :class="{active: wait}">
             <div class="content">
                 <div class="center">
                     <div v-if="progress" id="progress-bar" class="ui tiny progress">
@@ -23,58 +31,60 @@
                             <i class="inverted grey small cloud icon"></i>
                         </i>
                     </h1>
-                    <button class="ui small labeled icon button" @click="abort">
+                    <button v-if="permission('storage', 'abort', user)" class="ui small labeled icon button" @click="abort">
                         <i class="cancel icon"></i>取消</button>
                 </div>
             </div>
         </div>
         <table v-if="item" class="ui very basic selectable table" :class="{highlight}" @dragenter.stop.prevent="dragenter" @dragleave="dragleave" @drop.stop.prevent="drop" @dragover.stop.prevent="dragover">
             <thead>
-                <tr>
-                    <th colspan="6">
-                        <input type="file" id="pick-files" v-show="false" multiple @change="uploadFiles">
-                        <input type="file" id="pick-archives" v-show="false" multiple @change="uploadArchives" accept=".zip">
-                        <input type="file" id="pick-dir" v-show="false" @change="uploadDir" webkitdirectory directory multiple>
-                        <div class="ui small floating labeled icon dropdown button" :class="{disabled:pending}">
-                            <i class="cloud upload icon"></i>
-                            <span>上传</span>
-                            <div class="menu">
-                                <a class="item" @click="pickFiles">
-                                    <i class="small file icon"></i>文件</a>
-                                <a v-if="supportDir" class="item" @click="pickDir">
-                                    <i class="small folder icon"></i>文件夹</a>
-                                <a class="item" @click="pickArchives">
-                                    <i class="small archive icon"></i>压缩包</a>
+                <template v-if="permission('storage', 'upload', user)">
+                    <tr>
+                        <th colspan="6">
+                            <input type="file" id="pick-files" v-show="false" multiple @change="uploadFiles">
+                            <input type="file" id="pick-archives" v-show="false" multiple @change="uploadArchives" accept=".zip">
+                            <input type="file" id="pick-dir" v-show="false" @change="uploadDir" webkitdirectory directory multiple>
+                            <div class="ui small floating labeled icon dropdown button" :class="{disabled:pending}">
+                                <i class="cloud upload icon"></i>
+                                <span>上传</span>
+                                <div class="menu">
+                                    <a class="item" @click="pickFiles">
+                                        <i class="small file icon"></i>文件</a>
+                                    <a v-if="supportDir" class="item" @click="pickDir">
+                                        <i class="small folder icon"></i>文件夹</a>
+                                    <a class="item" @click="pickArchives">
+                                        <i class="small archive icon"></i>压缩包</a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ui small floating labeled icon dropdown button" :class="{disabled:pending}">
-                            <i class="add icon"></i>
-                            <span>新建</span>
-                            <div class="menu">
-                                <a class="item" @click="insert">
-                                    <i class="small folder icon"></i>文件夹</a>
+                            <div class="ui small floating labeled icon dropdown button" :class="{disabled:pending}">
+                                <i class="add icon"></i>
+                                <span>新建</span>
+                                <div class="menu">
+                                    <a class="item" @click="insert">
+                                        <i class="small folder icon"></i>文件夹</a>
+                                </div>
                             </div>
-                        </div>
-                    </th>
-                </tr>
-                <tr class="message box">
-                    <th colspan="6">
-                        <message :dismissable="true" :variation="'small info'">
-                            <div class="header">
-                                提示
-                            </div>
-                            <ul class="list">
-                                <li v-if="supportDir">支持文件夹上传</li>
-                                <li v-else>
-                                    <strike>当前浏览器不支持文件夹上传</strike>
-                                </li>
-                                <li>支持多文件同时上传</li>
-                                <li>支持拖拽文件进行上传</li>
-                                <li>支持上传zip文件并解压到当前路径</li>
-                            </ul>
-                        </message>
-                    </th>
-                </tr>
+                        </th>
+                    </tr>
+                    <tr class="message box">
+                        <th colspan="6">
+                            <message :dismissable="true" :variation="'small info'">
+                                <div class="header">
+                                    提示
+                                </div>
+                                <ul class="list">
+                                    <li v-if="supportDir">支持文件夹上传</li>
+                                    <li v-else>
+                                        <strike>当前浏览器不支持文件夹上传</strike>
+                                    </li>
+                                    <li>支持多文件同时上传</li>
+                                    <li>支持拖拽文件进行上传</li>
+                                    <li>支持上传zip文件并解压到当前路径</li>
+                                </ul>
+                            </message>
+                        </th>
+                    </tr>
+                </template>
                 <tr v-show="error" class="message box">
                     <th colspan="6">
                         <message :dismissable="true" :variant="'small error'">
@@ -123,7 +133,7 @@
                     <td></td>
                     <td></td>
                     <td>
-                        <div v-if="anyChecked">
+                        <div v-if="permission('storage', 'bulkRemove', user) && anyChecked">
                             <a @click="$refs.bulk.show()">
                                 <i class="large trash icon"></i>
                             </a>
@@ -185,13 +195,13 @@
                     <td>{{content.time | toDate}}</td>
                     <td>
                         <div class="hover-links actions" :class="{disabled:pending}">
-                            <a @click="downloadFile(content)">
+                            <a v-if="permission('storage', 'download', user)" @click="downloadFile(content)">
                                 <i class="large cloud download icon" :class="{disabled:pending}"></i>
                             </a>
-                            <a @click="edit(content)">
+                            <a v-if="permission('storage', 'rename', user)" @click="edit(content)">
                                 <i class="large edit icon" :class="{disabled:pending}"></i>
                             </a>
-                            <a @click="$refs.remove.show(content)">
+                            <a v-if="permission('storage', 'remove', user)" @click="$refs.remove.show(content)">
                                 <i class="large trash icon" :class="{disabled:pending}"></i>
                             </a>
                         </div>
@@ -228,6 +238,7 @@ export default {
     computed: {
         ...mapGetters('storage', ['item', 'pending', 'error', 'progress', 'wait']),
         ...mapGetters('users', { user: 'item' }),
+        ...mapGetters(['permission']),
         allChecked() {
             return this.item && this.checked && this.item.contents && this.item.contents.filter(e => this.checked.includes(e.path)).length == this.item.contents.length;
         },
@@ -341,7 +352,7 @@ export default {
                 }
             }
             if (files.length) {
-                 this.upload({ id: this.id, files });
+                this.upload({ id: this.id, files });
             }
         },
         toIcon(mime) {

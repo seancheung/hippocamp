@@ -6,7 +6,7 @@ export default {
     path: '/login',
     component: Login,
     beforeEnter: function (to, from, next) {
-        if (!Vue.store.getters.profile) {
+        if (!Vue.store.getters.account) {
             next();
         } else {
             next({

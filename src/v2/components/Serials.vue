@@ -1,10 +1,14 @@
 <template>
     <div class="ui contianer">
         <div class="ui breadcrumb">
-            <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
-            <i class="right caret icon divider"></i>
-            <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
-            <i class="right angle icon divider"></i>
+            <template v-if="permission('orgnizations', 'list')">
+                <router-link :to="{name: 'Orgnizations'}" class="section">组织</router-link>
+                <i class="right caret icon divider"></i>
+            </template>
+            <template v-if="permission('orgnizations', 'show', id)">
+                <router-link :to="{name: 'Orgnization', params: {id}}" class="section">{{item && item.name}}</router-link>
+                <i class="right angle icon divider"></i>
+            </template>
             <div class="active section">序列号</div>
         </div>
         <div class="hover-links options">
@@ -52,6 +56,7 @@ export default {
     computed: {
         ...mapGetters('serials', ['items', 'pending', 'error']),
         ...mapGetters('orgnizations', ['item']),
+        ...mapGetters(['permission']),
         valid() {
             return !isNaN(this.count) && Number.isInteger(Number(this.count)) && this.count > 0;
         }

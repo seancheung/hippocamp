@@ -1,22 +1,22 @@
 <template>
     <div class="ui container">
-        <h3 class="ui top attached header">{{profile.name}}, 你好!</h3>
+        <h3 class="ui top attached header">{{account.name}}, 你好!</h3>
         <div class="ui attached piled segment">
             <dl>
                 <dt>用户名</dt>
-                <dd>{{profile.name}}</dd>
+                <dd>{{account.name}}</dd>
                 <dt>邮箱</dt>
-                <dd>{{profile.email}}</dd>
-                <dt v-if="profile.org && profile.org.name">组织</dt>
-                <dd v-if="profile.org && profile.org.name">{{profile.org.name}}</dd>
+                <dd>{{account.email}}</dd>
+                <dt v-if="account.org && account.org.name">组织</dt>
+                <dd v-if="account.org && account.org.name">{{account.org.name}}</dd>
                 <dt>身份</dt>
-                <dd>{{profile.role}}</dd>
+                <dd>{{account.role}}</dd>
                 <dt>注册于</dt>
-                <dd>{{profile.createdAt | moment}}</dd>
+                <dd>{{account.createdAt | moment}}</dd>
                 <dt>修改于</dt>
-                <dd>{{profile.modifiedAt | moment}}</dd>
+                <dd>{{account.modifiedAt | moment}}</dd>
                 <dt>上次登录</dt>
-                <dd>{{profile.lastLogin | moment}}</dd>
+                <dd>{{account.lastLogin | moment}}</dd>
             </dl>
         </div>
     </div>
@@ -27,7 +27,7 @@ import moment from 'moment';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
-    computed: mapGetters(['profile']),
+    computed: mapGetters(['account']),
     filters: {
         moment(date) {
             return moment(date).format('L');

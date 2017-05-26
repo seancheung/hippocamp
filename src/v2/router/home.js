@@ -84,7 +84,7 @@ export default {
         props: true
     }],
     beforeEnter: (to, from, next) => {
-        if (Vue.store.getters.profile) {
+        if (Vue.store.getters.account) {
             next();
         } else {
             Vue.store.dispatch('redirect', {
